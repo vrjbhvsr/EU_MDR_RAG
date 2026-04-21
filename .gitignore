@@ -1,0 +1,16 @@
+.vscode
+__pycache__
+.env
+data/
+models/
+build/
+.ipynb_checkpoints
+*.so
+*.egg
+*.egg-info/
+*.pyc
+*.DS_Store
+Thumb.db
+venv/
+.log
+*.log
