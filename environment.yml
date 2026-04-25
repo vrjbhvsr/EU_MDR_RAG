@@ -1,0 +1,9 @@
+name: eu-mdr
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - chromadb=1.5.7
+  - unstructured=0.22.22
+  - pymupdf=1.27.2.2
+prefix: /opt/conda/envs/eu-mdr
