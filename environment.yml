@@ -6,4 +6,5 @@ dependencies:
   - chromadb=1.5.7
   - unstructured=0.22.22
   - pymupdf=1.27.2.2
+  - pandas>=3.0.2,3.0.3
 prefix: /opt/conda/envs/eu-mdr
