@@ -9,3 +9,4 @@ dependencies:
     - unstructured
     - python-magic-bin
     - chromadb
+    - pandas
