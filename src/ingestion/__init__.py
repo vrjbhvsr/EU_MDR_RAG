@@ -10,3 +10,5 @@
 - paragraph_number: type: str,       nullable: Yes,  example: "(3)(a)"
 - page_number:      type: int,       nullable: No,   example: 31
 - cross_references: type: list[str], nullable: Yes,  example: ["Article 10(3)", "Annex XIV"]"""
+
+from .pdf_extrator import PDF_Extractor
