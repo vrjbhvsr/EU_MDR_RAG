@@ -38,11 +38,12 @@ class PDF_Extractor:
     
     def _load_table_cache(self):
         cached = self.cache_dir/"tables.json"
-        cache_file = Path() if isinstance(cached,str) else cached
-    
-        with open(cache_file,'r') as f:
-            cache = json.load(f)
-
+        if cached.is_file():
+            cache_file = cached        
+            with open(cache_file,'r') as f:
+                cache = json.load(f)
+        else:
+            cache = os.path.isfile(cached)
         return cache
 
     def _intersect(self,coords1, coords2):
@@ -85,4 +86,4 @@ class PDF_Extractor:
                   
 if __name__ == "__main__":
     PE = PDF_Extractor(pdf_path=r"C:\Users\Vraj\Desktop\EU_MDR_RAG\data\raw\eu_mdr_2017-745.pdf")
-    PE.extract_text()
+    print(PE.extract_text())
