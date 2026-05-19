@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import json
 import sys
+from src.utils import log, CustomException
 
 class PDF_Extractor:
 
@@ -20,7 +21,13 @@ class PDF_Extractor:
         self.cache_dir = Path(self.base_dir/"data"/"cache")
         self.raw_text = ""
         self.raw_table=""
-        self.docs = pymupdf.open(self.pdf_path)
+        self.log = log()
+        try:
+            self.docs = pymupdf.open(self.pdf_path)
+            self.log.info(f"PDF document '{self.pdf_path}' opened successfully.")
+        except Exception as e:
+            self.log.exception(f"Failed to open PDF document '{self.pdf_path}'. Error: {str(e)}")
+            raise CustomException(f"Failed to open PDF document '{self.pdf_path}'. Error: {str(e)}") from e
 
     def _find_tables(self):
         """Find tables in the PDF and cache their content and coordinates.
@@ -30,25 +37,32 @@ class PDF_Extractor:
         
         Returns:
             None"""
-        if not self.cache_dir.is_dir():
-            self.cache_dir.mkdir(parents=True)
-        table_cache = self.cache_dir/"tables.json"
-        page_tables =[]
-        for i, page in enumerate(self.docs):
-            tables = page.find_tables().tables
+        try:
+            self.log.info("Starting table extraction and caching process.")
+            if not self.cache_dir.is_dir():
+                self.cache_dir.mkdir(parents=True)
+            table_cache = self.cache_dir/"tables.json"
+            page_tables =[]
+            for i, page in enumerate(self.docs):
+                tables = page.find_tables().tables
 
-            if tables:
-                for j,table in enumerate(tables):
-                    page_tables.append(                    
-                    {
-                        "page_number": i+1,
-                        "table_id": j,
-                        "table_content":table.to_markdown(),
-                        "table_coordinates": table.bbox, 
-                    } 
-                    )
-        with open(table_cache, 'w') as f:
-            json.dump(page_tables,f,indent=4)
+                if tables:
+                    for j,table in enumerate(tables):
+                        page_tables.append(                    
+                        {
+                            "page_number": i+1,
+                            "table_id": j,
+                            "table_content":table.to_markdown(),
+                            "table_coordinates": table.bbox, 
+                        } 
+                        )
+            with open(table_cache, 'w') as f:
+                json.dump(page_tables,f,indent=4)
+            self.log.info("Table extraction and caching process completed successfully.")
+
+        except Exception as e:
+            self.log.exception(f"Failed to extract and cache tables from PDF document '{self.pdf_path}'. Error: {str(e)}")
+            raise CustomException(f"Failed to extract and cache tables from PDF document '{self.pdf_path}'. Error: {str(e)}") from e
     
     def _load_table_cache(self) -> list[dict]:
         """Load the cached table information from the cache file (tables.json).
@@ -57,14 +71,18 @@ class PDF_Extractor:
         Returns:
             list: A list of dictionaries containing the cached table information, or an empty list if the cache file does not exist or is empty."""
         cached = self.cache_dir/"tables.json" 
-        if not cached.is_file():
-            return []
-        if not cached.stat().st_size:
-            return []
-        with open(cached,'r') as f:
-            cache = json.load(f)
-
-        return cache
+        try:
+            if not cached.is_file():
+                return []
+            if not cached.stat().st_size:
+                return []
+            with open(cached,'r') as f:
+                cache = json.load(f)
+            self.log.info(f"Table cache loaded successfully from '{cached}'.")
+            return cache
+        except Exception as e:
+            self.log.exception(f"Failed to load table cache from '{cached}'. Error: {str(e)}")
+            raise CustomException(f"Failed to load table cache from '{cached}'. Error: {str(e)}") from e
 
     def _intersect(self,coords1, coords2) -> bool:
         """Check if two rectangles defined by their coordinates intersect.
@@ -78,13 +96,18 @@ class PDF_Extractor:
         Returns:
             bool: True if the rectangles intersect, False otherwise."""
         
-        x1_1, y1_1, x2_1, y2_1 = coords1
-        x1_2, y1_2, x2_2, y2_2 = coords2
+        try:
+            x1_1, y1_1, x2_1, y2_1 = coords1
+            x1_2, y1_2, x2_2, y2_2 = coords2
 
-        if (x1_1 < x2_2 and x2_1 > x1_2 and
-            y1_1 < y2_2 and y2_1 > y1_2):
-            return True
-        return False
+            if (x1_1 < x2_2 and x2_1 > x1_2 and
+                y1_1 < y2_2 and y2_1 > y1_2):
+                return True
+            
+            return False
+        except Exception as e:
+            self.log.exception(f"Failed to check intersection between coordinates {coords1} and {coords2}. Error: {str(e)}")
+            raise CustomException(f"Failed to check intersection between coordinates {coords1} and {coords2}. Error: {str(e)}") from e
     
     def extract_text(self) -> str:
         """Extract text from the PDF while excluding text that is part of tables.
@@ -93,33 +116,35 @@ class PDF_Extractor:
         Returns:
             str: The extracted text from the PDF, excluding text that is part of tables.
         """
-        if not self._load_table_cache():
-            self._find_tables()
-        cache = self._load_table_cache()
-        raw_text = ""
-        table_pages = [i['page_number'] for i in cache]
-        for page_num, page in enumerate(self.docs):
-            p = page_num + 1
-            if cache:
-                if p in table_pages:
-                    current_page_coords = [i['table_coordinates'] 
-                                            for i in cache 
-                                            if i['page_number'] == p]
-                    
-                    # if the coordinates of the text block do not intersect with the table coordinates, then we can consider it as text outside the table
-                    for i in page.get_text('blocks'):
-                        x1,y1,x2,y2 = i[:4]
-                        if not any(self._intersect((x1,y1,x2,y2),table_coord) for table_coord in current_page_coords):
-                            text = i[4]
-                            raw_text += text + "\n"
+        try:
+            self.log.info(f"Starting text extraction from PDF document '{self.pdf_path}'.")
+            if not self._load_table_cache():
+                self._find_tables()
+            cache = self._load_table_cache()
+            raw_text = ""
+            table_pages = [i['page_number'] for i in cache]
+            for page_num, page in enumerate(self.docs):
+                p = page_num + 1
+                if cache:
+                    if p in table_pages:
+                        current_page_coords = [i['table_coordinates'] 
+                                                for i in cache 
+                                                if i['page_number'] == p]
+                        
+                        # if the coordinates of the text block do not intersect with the table coordinates, then we can consider it as text outside the table
+                        for i in page.get_text('blocks'):
+                            x1,y1,x2,y2 = i[:4]
+                            if not any(self._intersect((x1,y1,x2,y2),table_coord) for table_coord in current_page_coords):
+                                text = i[4]
+                                raw_text += text + "\n"
+                    else:
+                        text = str(page.get_text())
+                        raw_text += text + "\n"
                 else:
-                    text = str(page.get_text())
-                    raw_text += text + "\n"
-            else:
-                raw_text += str(page.get_text()) + "\n"
-        return raw_text
-
+                    raw_text += str(page.get_text()) + "\n"
+            self.log.info(f"Text extraction from PDF document '{self.pdf_path}' completed successfully.")
+            return raw_text
+        except Exception as e:
+            self.log.exception(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}")
+            raise CustomException(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}") from e
                   
-if __name__ == "__main__":
-    PE = PDF_Extractor(pdf_path=sys.argv[1])
-    text = PE.extract_text()
