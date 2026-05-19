@@ -29,21 +29,20 @@ class PDF_Extractor:
                         "table_id": j,
                         "table_content":table.to_markdown(),
                         "table_coordinates": table.bbox, 
-                        
                     } 
                     )
-                
         with open(table_cache, 'w') as f:
             json.dump(page_tables,f,indent=4)
     
     def _load_table_cache(self):
-        cached = self.cache_dir/"tables.json"
-        if cached.is_file():
-            cache_file = cached        
-            with open(cache_file,'r') as f:
-                cache = json.load(f)
-        else:
-            cache = os.path.isfile(cached)
+        cached = self.cache_dir/"tables.json" 
+        if not cached.is_file():
+            return []
+        if not cached.stat().st_size:
+            return []
+        with open(cached,'r') as f:
+            cache = json.load(f)
+
         return cache
 
     def _intersect(self,coords1, coords2):
@@ -60,16 +59,15 @@ class PDF_Extractor:
             self._find_tables()
         cache = self._load_table_cache()
         raw_text = ""
-        if cache:
-            table_pages = [i['page_number'] for i in cache]
-            
-            for page_num, page in enumerate(self.docs):
-                p = page_num + 1
+        table_pages = [i['page_number'] for i in cache]
+        for page_num, page in enumerate(self.docs):
+            p = page_num + 1
+            if cache:
                 if p in table_pages:
                     current_page_coords = [i['table_coordinates'] 
                                             for i in cache 
                                             if i['page_number'] == p]
-                     
+                    
                     # if the coordinates of the text block do not intersect with the table coordinates, then we can consider it as text outside the table
                     for i in page.get_text('blocks'):
                         x1,y1,x2,y2 = i[:4]
@@ -79,8 +77,8 @@ class PDF_Extractor:
                 else:
                     text = str(page.get_text())
                     raw_text += text + "\n"
-        else:
-            raw_text += str(page.get_text()) + "\n"
+            else:
+                raw_text += str(page.get_text()) + "\n"
         return raw_text
 
                   
