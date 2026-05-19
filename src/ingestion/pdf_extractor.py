@@ -5,7 +5,15 @@ import json
 import sys
 
 class PDF_Extractor:
+
     def __init__(self, pdf_path: Path | str):
+        """Initialize the PDF_Extractor class with the path to the PDF document.
+        This method sets up the necessary attributes for the PDF extraction process, including the base directory, PDF path, cache directory, and initializes the raw text and table content. It also opens the PDF document using pymupdf for further processing.
+        Args:
+            pdf_path (Path | str): The path to the PDF document to be extracted. This can be provided as a string or a Path object.
+        Returns:
+            Object: An instance of the PDF_Extractor class initialized with the specified PDF document and ready for text extraction.
+            """
         self.base_dir = Path(__file__).resolve().parents[2]
         self.pdf_path = Path(pdf_path) if isinstance(pdf_path,str) else pdf_path
         self.pdf_path = self.base_dir/self.pdf_path if self.base_dir != self.pdf_path.parents[2] else self.pdf_path
