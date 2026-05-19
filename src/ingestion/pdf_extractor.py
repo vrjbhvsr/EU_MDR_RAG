@@ -114,4 +114,4 @@ class PDF_Extractor:
                   
 if __name__ == "__main__":
     PE = PDF_Extractor(pdf_path=sys.argv[1])
-    print(PE.extract_text())
+    text = PE.extract_text()
