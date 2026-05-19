@@ -11,4 +11,4 @@
 - page_number:      type: int,       nullable: No,   example: 31
 - cross_references: type: list[str], nullable: Yes,  example: ["Article 10(3)", "Annex XIV"]"""
 
-from .pdf_extrator import PDF_Extractor
+from .pdf_extractor import PDF_Extractor

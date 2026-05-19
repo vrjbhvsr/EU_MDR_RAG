@@ -2,6 +2,7 @@ import pymupdf
 import os
 from pathlib import Path
 import json
+import sys
 
 class PDF_Extractor:
     def __init__(self, pdf_path: Path | str):
@@ -83,5 +84,5 @@ class PDF_Extractor:
 
                   
 if __name__ == "__main__":
-    PE = PDF_Extractor(pdf_path=r"C:\Users\Vraj\Desktop\EU_MDR_RAG\data\raw\eu_mdr_2017-745.pdf")
+    PE = PDF_Extractor(pdf_path=sys.argv[1])
     print(PE.extract_text())
