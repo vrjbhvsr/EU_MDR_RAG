@@ -15,6 +15,13 @@ class PDF_Extractor:
         self.docs = pymupdf.open(self.pdf_path)
 
     def _find_tables(self):
+        """Find tables in the PDF and cache their content and coordinates.
+        This method iterates through each page of the PDF, identifies tables, and stores their content and coordinates in a cache file (tables.json) for later use during text extraction.
+        The cache file is structured as a list of dictionaries, where each dictionary contains the page number, table ID, table content in markdown format, and the coordinates of the table on the page.
+        The method ensures that the cache directory exists before attempting to write the cache file. If the cache file already exists, it will be overwritten with the new table information.
+        
+        Returns:
+            None"""
         if not self.cache_dir.is_dir():
             self.cache_dir.mkdir(parents=True)
         table_cache = self.cache_dir/"tables.json"
@@ -35,7 +42,12 @@ class PDF_Extractor:
         with open(table_cache, 'w') as f:
             json.dump(page_tables,f,indent=4)
     
-    def _load_table_cache(self):
+    def _load_table_cache(self) -> list[dict]:
+        """Load the cached table information from the cache file (tables.json).
+        This method checks for the existence of the cache file and loads its content if it exists and
+        is not empty.
+        Returns:
+            list: A list of dictionaries containing the cached table information, or an empty list if the cache file does not exist or is empty."""
         cached = self.cache_dir/"tables.json" 
         if not cached.is_file():
             return []
@@ -46,7 +58,18 @@ class PDF_Extractor:
 
         return cache
 
-    def _intersect(self,coords1, coords2):
+    def _intersect(self,coords1, coords2) -> bool:
+        """Check if two rectangles defined by their coordinates intersect.
+        This method takes the coordinates of two rectangles (defined by their top-left and bottom-right corners
+        and checks if they intersect. The coordinates are expected to be in the format (x1, y1, x2, y2), where (x1, y1) represents the top-left corner and (x2, y2) represents the bottom-right corner of the rectangle.
+        The method returns True if the rectangles intersect and False otherwise.
+        Args:
+            coords1 (tuple): A tuple containing the coordinates of the first rectangle (x1, y1, x2, y2).
+            coords2 (tuple): A tuple containing the coordinates of the second rectangle (x1, y1, x2, y2).   
+        
+        Returns:
+            bool: True if the rectangles intersect, False otherwise."""
+        
         x1_1, y1_1, x2_1, y2_1 = coords1
         x1_2, y1_2, x2_2, y2_2 = coords2
 
@@ -55,7 +78,13 @@ class PDF_Extractor:
             return True
         return False
     
-    def extract_text(self):
+    def extract_text(self) -> str:
+        """Extract text from the PDF while excluding text that is part of tables.
+        This method first checks if the table cache is available and loads it. If the cache is
+        not available, it calls the _find_tables method to populate the cache. Then, it iterates through each page of the PDF and checks if there are any tables on that page based on the cached information. If tables are present, it checks each text block on the page against the coordinates of the tables to determine if the text block is part of a table or not. If a text block does not intersect with any table coordinates, it is considered as text outside the table and is added to the raw_text string. If there are no tables on the page, all text from that page is added to raw_text. Finally, the method returns the extracted text as a single string.
+        Returns:
+            str: The extracted text from the PDF, excluding text that is part of tables.
+        """
         if not self._load_table_cache():
             self._find_tables()
         cache = self._load_table_cache()
