@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import inspect
 from colorlog import ColoredFormatter
+import inspect
 
 class log:
     def __init__(self):
@@ -14,8 +15,10 @@ class log:
 
         # Define the log file name
         self.file_path= self.log_dir / "app.log" # Log file will be named app.log
+        filename = inspect.stack()[1].filename   # Gtting the filename from which .py file the logger is called
+        module_name = Path(filename).stem
 
-        self.logger = self._make_logger(self.file_path, "app_logger")
+        self.logger = self._make_logger(self.file_path, module_name)
     # defining a method to create logger
     def _make_logger(self, filepath, logger):
         logger = logging.getLogger(logger)

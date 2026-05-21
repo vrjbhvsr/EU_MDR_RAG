@@ -27,7 +27,7 @@ class PDF_Extractor:
             self.log.info(f"PDF document '{self.pdf_path}' opened successfully.")
         except Exception as e:
             self.log.exception(f"Failed to open PDF document '{self.pdf_path}'. Error: {str(e)}")
-            raise CustomException(f"Failed to open PDF document '{self.pdf_path}'. Error: {str(e)}") from e
+            raise CustomException(f"Failed to open PDF document '{self.pdf_path}'. Error: {str(e),sys}") from e
 
     def _find_tables(self):
         """Find tables in the PDF and cache their content and coordinates.
@@ -82,7 +82,7 @@ class PDF_Extractor:
             return cache
         except Exception as e:
             self.log.exception(f"Failed to load table cache from '{cached}'. Error: {str(e)}")
-            raise CustomException(f"Failed to load table cache from '{cached}'. Error: {str(e)}") from e
+            raise CustomException(f"Failed to load table cache from '{cached}'. Error: {str(e)}",sys) from e
 
     def _intersect(self,coords1, coords2) -> bool:
         """Check if two rectangles defined by their coordinates intersect.
@@ -107,7 +107,7 @@ class PDF_Extractor:
             return False
         except Exception as e:
             self.log.exception(f"Failed to check intersection between coordinates {coords1} and {coords2}. Error: {str(e)}")
-            raise CustomException(f"Failed to check intersection between coordinates {coords1} and {coords2}. Error: {str(e)}") from e
+            raise CustomException(f"Failed to check intersection between coordinates {coords1} and {coords2}. Error: {str(e)}",sys) from e
     
     def extract_text(self) -> str:
         """Extract text from the PDF while excluding text that is part of tables.
@@ -146,5 +146,5 @@ class PDF_Extractor:
             return raw_text
         except Exception as e:
             self.log.exception(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}")
-            raise CustomException(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}") from e
+            raise CustomException(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}", sys) from e
                   
