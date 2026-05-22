@@ -12,3 +12,4 @@
 - cross_references: type: list[str], nullable: Yes,  example: ["Article 10(3)", "Annex XIV"]"""
 
 from .pdf_extractor import PDF_Extractor
+from .text_cleaner import Text_Cleaner
