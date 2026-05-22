@@ -118,12 +118,14 @@ class PDF_Extractor:
         """
         try:
             self.log.info(f"Starting text extraction from PDF document '{self.pdf_path}'.")
+            page_starts_at_word_count = []
             if not self._load_table_cache():
                 self._find_tables()
             cache = self._load_table_cache()
             raw_text = ""
             table_pages = [i['page_number'] for i in cache]
             for page_num, page in enumerate(self.docs):
+                page_starts_at_word_count.append(len(raw_text))
                 p = page_num + 1
                 if cache:
                     if p in table_pages:
@@ -143,7 +145,7 @@ class PDF_Extractor:
                 else:
                     raw_text += str(page.get_text()) + "\n"
             self.log.info(f"Text extraction from PDF document '{self.pdf_path}' completed successfully.")
-            return raw_text
+            return raw_text, page_starts_at_word_count
         except Exception as e:
             self.log.exception(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}")
             raise CustomException(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}", sys) from e
