@@ -105,7 +105,7 @@ class Structure_Parser:
                     metadata['section'] = ""
                     metadata['section_title'] = ""
 
-                elif marker[1] == "chapter":            # If the marker indicates a chapter, extract the chapter number and title, determine the page number, and update the metadata accordingly.
+                elif marker[1] == "Chapter":            # If the marker indicates a chapter, extract the chapter number and title, determine the page number, and update the metadata accordingly.
                     chapter = marker[2].split("\n")[0]
                     chapter_title = marker[2].split('\n')[1]
                     chapter_location = marker[0]
@@ -118,7 +118,7 @@ class Structure_Parser:
                     metadata['section'] = ""
                     metadata['section_title'] = ""
                 
-                elif marker[2] == "Section":            # If the marker indicates a section, extract the section number and title, determine the page number, and update the metadata accordingly.
+                elif marker[1] == "Section":            # If the marker indicates a section, extract the section number and title, determine the page number, and update the metadata accordingly.
                     section = marker[2].split("\n")[0]
                     section_title = marker[2].split("\n")[1]
                     new_metadata['section'] = section
@@ -129,7 +129,7 @@ class Structure_Parser:
                     metadata.update(new_metadata)
                     Documents.append({"page_content": current_text, "metadata": new_metadata})
                 
-                elif marker[2] == "Article":            # If the marker indicates an article, extract the article number and title, determine the page number, and update the metadata accordingly.
+                elif marker[1] == "Article":            # If the marker indicates an article, extract the article number and title, determine the page number, and update the metadata accordingly.
                     article = marker[2].split("\n")[0]
                     article_title = marker[2].split("\n")[1]
                     new_metadata['article'] = article
@@ -145,14 +145,4 @@ class Structure_Parser:
             self.log.exception("Failed to create the structure.")
             raise CustomException(f"Failed to Create the structure due to the Error: {str(e),sys}") from e              
         
-
-if __name__ == "__main__":
-    PE = PDF_Extractor("data/raw/eu_mdr_2017-745.pdf")
-    raw_text, page_starts = PE.extract_text()
-
-    #TC = Text_Cleaner(raw_text)
-    #cleaned_text = TC.Clean()
-
-    SP = Structure_Parser(raw_text, page_starts)
-    sm = SP.Create_Structure()
 

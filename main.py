@@ -9,3 +9,4 @@ raw_text, page_starts = PE.extract_text()
 SP = Structure_Parser(raw_text, page_starts)
 sm = SP.Create_Structure()
 
+
