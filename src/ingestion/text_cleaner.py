@@ -5,7 +5,7 @@ from src.utils import log, CustomException
 from src.ingestion import PDF_Extractor
 
 class Text_Cleaner:
-    def __init__(self,raw_text: str):
+    def __init__(self,Doc_list: list, raw_text: str):
         """Initialize the Text_Cleaner class with the raw text extracted from a PDF document.
         This method sets up the necessary attributes for cleaning the extracted text, including the raw text and
         a logger for tracking the cleaning process. The raw text is expected to be a string containing the entire content of the PDF document, which will be processed to remove unwanted characters, headers, and other elements that may interfere with further analysis or processing.
@@ -14,7 +14,8 @@ class Text_Cleaner:
         Returns:
             Object: An instance of the Text_Cleaner class initialized with the provided raw text and ready for cleaning the text content.
         """
-        self.raw_text = raw_text
+        self.Doc_list = Doc_list
+        self.raw_text = raw_text    
         self.header_Regex = r"""\d{1,2}\.\d{1,2}\.\d{4}\s*\nL\s+\d{3}/\d+\s*\nOfficial Journal of the European Union\s*\nEN\s*"""
         self.log = log()
 
@@ -42,23 +43,24 @@ class Text_Cleaner:
             str: The cleaned text after replacing or removing unusual characters. The returned string should have all the specified unusual characters replaced with their standard equivalents, resulting in a cleaner version of the original raw text that is more suitable for further processing or analysis.
         """
         try:
-            self.log.info("Cleaning unusal characters from the text.")
-            text = self.raw_text.replace("\xad","")
-            self.log.info("Removed soft hyphen characters from the text.")
-            text = text.replace("Ε","E")
-            self.log.info("Replaced Greek character 'Ε' from the text to English 'E'.")    
-            text = text.replace("‑","-")
-            self.log.info("Replaced non-breaking hyphen characters from the text to standard hyphen.")
-            text = text.replace("‘","'")
-            self.log.info("Replaced left single quotation mark characters from the text to standard single quotation mark.")    
-            text = text.replace("’","'")
-            self.log.info("Replaced right single quotation mark characters from the text to standard single quotation mark.")
-            return text
+            Docs = []
+            for doc in self.Doc_list:
+                raw_text = doc.get('page_content')
+                text = raw_text.replace("\xad","")
+                text = text.replace("Ε","E") 
+                text = text.replace("‑","-")
+                text = text.replace("‘","'")
+                text = text.replace("’","'")
+
+                doc['page_content'] = text
+                Docs.append(doc)
+                
+            return Docs
         except Exception as e:
             self.log.exception("Failed to clean unusal characters from the text.")
             raise CustomException(f"Failed to clean unusal characters from the text.Error: {str(e), sys}") from e
         
-    def _remove_headers(self, raw_text: str) -> str:
+    def _remove_headers(self, Doc_list: list) -> list:
         """Remove headers from the raw text and add a 'Cross-relation' marker where the footer starts.
         This method uses a regular expression to identify and remove headers from the raw text. The headers are replaced with a specific marker ("Usefull Information to Consider:\n") to indicate where the footer starts. This helps in distinguishing the main content of the text from the header and footer sections, making it easier for further analysis or processing of the cleaned text.
         Args:
@@ -68,11 +70,16 @@ class Text_Cleaner:
         """
         try:
             self.log.info("Removing Headers from the text and adding the 'Cross-relation' where the footer starts.")
-            raw_text = re.sub(self.header_Regex,"Usefull Information to Consider:\n", raw_text)
+            Docs = []
+            for doc in Doc_list:
+                raw_text = doc.get('page_content')
+                raw_text = re.sub(self.header_Regex,"Usefull Information to Consider:\n", raw_text)
+                doc['page_content'] = raw_text
+                Docs.append(doc)
             self.log.info("Headers removed from the raw data.")
-            return raw_text
+            return Docs
         except Exception as e:
-
+            self.log.exception("Failed to remove Headers from the text.")
             raise CustomException(f"Failed to remove Headers from the text. Error: {str(e), sys}") from e
         
     def Clean(self) -> str:
