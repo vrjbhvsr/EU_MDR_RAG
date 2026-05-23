@@ -145,7 +145,7 @@ class PDF_Extractor:
                 else:
                     raw_text += str(page.get_text()) + "\n"
             self.log.info(f"Text extraction from PDF document '{self.pdf_path}' completed successfully.")
-            return raw_text, page_starts_at_word_count
+            return raw_text, sorted(page_starts_at_word_count)
         except Exception as e:
             self.log.exception(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}")
             raise CustomException(f"Failed to extract text from PDF document '{self.pdf_path}'. Error: {str(e)}", sys) from e

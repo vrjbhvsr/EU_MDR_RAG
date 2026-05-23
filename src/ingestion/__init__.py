@@ -13,3 +13,4 @@
 
 from .pdf_extractor import PDF_Extractor
 from .text_cleaner import Text_Cleaner
+from .structure_parser import Structure_Parser

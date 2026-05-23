@@ -1,1 +1,1 @@
-from .ingestion import PDF_Extractor, Text_Cleaner
+from .ingestion import PDF_Extractor, Text_Cleaner, Structure_Parser
