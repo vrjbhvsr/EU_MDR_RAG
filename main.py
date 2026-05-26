@@ -1,12 +1,11 @@
-from src import PDF_Extractor, Text_Cleaner, Structure_Parser
+from scripts.ingest_documents import Document_Ingestor
+from config import get_settings
 
-PE = PDF_Extractor("data/raw/eu_mdr_2017-745.pdf")
-raw_text, page_starts = PE.extract_text()
-
-SP = Structure_Parser(raw_text, page_starts)
-sm = SP.Create_Structure()
+settings = get_settings()
 
 
-TC = Text_Cleaner(Doc_list=sm, raw_text=raw_text)
-cleaned_text = TC.Clean()
+raw_dir = settings.ingestion.raw_data_dir
+processed_dir = settings.ingestion.processed_data_dir
 
+ingestor = Document_Ingestor(raw_dir, processed_dir)
+ingestor.ingest()

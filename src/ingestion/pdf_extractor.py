@@ -4,6 +4,9 @@ from pathlib import Path
 import json
 import sys
 from src.utils import log, CustomException
+from config import get_settings
+
+settings = get_settings()
 
 class PDF_Extractor:
 
@@ -15,10 +18,9 @@ class PDF_Extractor:
         Returns:
             Object: An instance of the PDF_Extractor class initialized with the specified PDF document and ready for text extraction.
             """
-        self.base_dir = Path(__file__).resolve().parents[2]
-        self.pdf_path = Path(pdf_path) if isinstance(pdf_path,str) else pdf_path
-        self.pdf_path = self.base_dir/self.pdf_path if self.base_dir != self.pdf_path.parents[2] else self.pdf_path
-        self.cache_dir = Path(self.base_dir/"data"/"cache")
+        
+        self.pdf_path = Path(settings.ingestion.raw_data_dir)/pdf_path
+        self.cache_dir = Path(settings.ingestion.cache_dir)
         self.raw_text = ""
         self.raw_table=""
         self.log = log()
