@@ -57,8 +57,12 @@ class Structure_Parser:
             raise CustomException(f"Failed to Get the markers due to the Error: {str(e),sys}") from e
 
     def Create_Structure(self):
-        """Create a structured representation of the document based on the identified markers. This method organizes the content of the document into a hierarchical structure, such as a tree or nested dictionary, using the markers extracted from the raw text. The structure allows for easy navigation and retrieval of specific sections or elements within the document.
-        The method processes the list of markers, determining their relationships (e.g., which sections belong to which chapters) and building a structured representation accordingly. This can involve creating nodes for each marker and linking them based on their positions in the document. The resulting structure can be used for various applications, such as generating summaries, creating an index, or facilitating information retrieval.
+        """Create a structured representation of the document based on the identified markers. This method organizes the content of the document into a hierarchical structure, 
+        such as a tree or nested dictionary, using the markers extracted from the raw text. 
+        The structure allows for easy navigation and retrieval of specific sections or elements within the document.
+        The method processes the list of markers, determining their relationships (e.g., which sections belong to which chapters) and building a structured representation accordingly. 
+        This can involve creating nodes for each marker and linking them based on their positions in the document. The resulting structure can be used for various applications, 
+        such as generating summaries, creating an index, or facilitating information retrieval.
         Returns:
             Object: A structured representation of the document, such as a tree or nested dictionary, that organizes the content based on the identified markers. This structure allows for efficient navigation and access to specific sections or elements within the document.
         """

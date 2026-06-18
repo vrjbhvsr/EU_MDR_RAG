@@ -73,7 +73,7 @@ class Text_Cleaner:
             Docs = []
             for doc in Doc_list:
                 raw_text = doc.get('page_content')
-                raw_text = re.sub(self.header_Regex,"Usefull Information to Consider:\n", raw_text)
+                raw_text = re.sub(self.header_Regex,"", raw_text)
                 doc['page_content'] = raw_text
                 Docs.append(doc)
             self.log.info("Headers removed from the raw data.")
