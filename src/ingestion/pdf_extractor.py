@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 import sys
 from src.utils import log, CustomException
-from config import get_settings
+from config.settings import get_settings
 
 settings = get_settings()
 
