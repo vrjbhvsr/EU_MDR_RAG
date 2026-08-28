@@ -28,6 +28,7 @@ class Document_Ingestor:
                 self.log.info(f"Starting ingestion process for file: {filename}")
                 PE = PDF_Extractor(pdf_path = filename)
                 raw_text, page_starts = PE.extract_text()
+                print("Working")
                 self.log.info("PDF text extraction completed successfully.")
                 
                 SP = Structure_Parser(raw_text, page_starts)

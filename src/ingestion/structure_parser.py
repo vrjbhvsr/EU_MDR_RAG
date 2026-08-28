@@ -80,7 +80,8 @@ class Structure_Parser:
         meta_copy = metadata.copy()  # Create a copy of the metadata dictionary to modify for each document.
         meta_copy['chapter'] = 0 # Set the chapter metadata to 0 for the content before the first marker, indicating that it does not belong to any chapter.
         meta_copy['chapter_title'] = 'preamble'  # Set the chapter title metadata to 'preamble' for the content before the first marker.
-        meta_copy['page_number'] = bisect.bisect(self.page_list, markers[0][0]-1)  # Determine the page number for the content before the first marker using the page starts list.
+        meta_copy['page_number'] = f"{bisect.bisect(self.page_list, 0)}-{bisect.bisect(self.page_list, markers[0][0])}"  # Determine the page number for the content before the first marker using the page starts list.
+        print(meta_copy['page_number'])
         Documents.append({"page_content":Page_cont,"metadata": meta_copy})  # Append the content before the first marker
         try:
             self.log.info("Creating a structured representation of the document based on the identified markers.")
@@ -94,8 +95,12 @@ class Structure_Parser:
                     Annex = marker[2].split('\n')[0]
                     Annex_title = marker[2].split('\n')[1]
                     Annex_location = marker[0]
+
                     page_num = bisect.bisect(self.page_list, Annex_location)
-                    new_metadata['page_number'] = page_num
+                    
+                    if i < len(markers) - 1:
+                        end_p = bisect.bisect(self.page_list, markers[i+1][0])
+                    new_metadata['page_number'] = f"{page_num}-{end_p}"
                     new_metadata['annex'] = Annex
                     new_metadata['annex_title'] = Annex_title
                     metadata.update(new_metadata)
@@ -114,7 +119,8 @@ class Structure_Parser:
                     chapter_title = marker[2].split('\n')[1]
                     chapter_location = marker[0]
                     page_num = bisect.bisect(self.page_list, chapter_location)
-                    new_metadata['page_number'] = page_num
+                    end_p = bisect.bisect(self.page_list, markers[i+1][0])
+                    new_metadata['page_number'] = f"{page_num}-{end_p}"
                     new_metadata['chapter'] = chapter
                     new_metadata['chapter_title'] = chapter_title
                     metadata.update(new_metadata)
@@ -128,8 +134,10 @@ class Structure_Parser:
                     new_metadata['section'] = section
                     new_metadata['section_title'] = section_title
                     sec_location = marker[0]
-                    page_num = bisect.bisect(self.page_list,sec_location)
-                    new_metadata['page_number'] = page_num
+                    page_num = bisect.bisect(self.page_list, sec_location)
+                    end_p = bisect.bisect(self.page_list, markers[i+1][0])
+                    new_metadata['page_number'] = f"{page_num}-{end_p}"
+                
                     metadata.update(new_metadata)
                     Documents.append({"page_content": current_text, "metadata": new_metadata})
                 
@@ -140,7 +148,8 @@ class Structure_Parser:
                     new_metadata['article_title'] = article_title
                     art_location = marker[0]
                     page_num = bisect.bisect(self.page_list,art_location)
-                    new_metadata['page_number'] = page_num
+                    end_p = bisect.bisect(self.page_list, markers[i+1][0])
+                    new_metadata['page_number'] = f"{page_num}-{end_p}"
                     metadata.update(new_metadata)
                     Documents.append({"page_content": current_text, "metadata": new_metadata})
 
