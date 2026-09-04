@@ -2,17 +2,22 @@ from pydantic_settings import BaseSettings
 from pydantic import BaseModel
 from pathlib import Path
 
+#########################################################################################
 class IngestionConfig(BaseModel):
     """Configuration for the data ingestion process."""
     raw_data_dir: Path = Path("data/raw")
     processed_data_dir: Path = Path("data/processed")
     cache_dir: Path = Path("data/cache")
 
+#------------------------------------------------------------------------------------------
+
 class ChunkingConfig(BaseModel):
     """Configuration for Chunking Process."""
     model_name: str = 'BAAI/bge-base-en-v1.5'
     max_tokens: int = 512
 
+
+##############################################################################################
 
 class Settings(BaseSettings):
     """Application settings for the data ingestion process."""
