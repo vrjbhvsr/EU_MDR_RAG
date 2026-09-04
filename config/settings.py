@@ -8,10 +8,16 @@ class IngestionConfig(BaseModel):
     processed_data_dir: Path = Path("data/processed")
     cache_dir: Path = Path("data/cache")
 
+class ChunkingConfig(BaseModel):
+    """Configuration for Chunking Process."""
+    model_name: str = 'BAAI/bge-base-en-v1.5'
+    max_tokens: int = 512
+
 
 class Settings(BaseSettings):
     """Application settings for the data ingestion process."""
     ingestion: IngestionConfig = IngestionConfig()
+    chunking: ChunkingConfig = ChunkingConfig()
 
     class Config:
         """Pydantic configuration for the Settings class."""
