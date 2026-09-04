@@ -11,4 +11,5 @@ embedding_model = settings.chunking.model_name
 
 
 ingestor = Document_Ingestor(raw_dir, processed_dir)
-ingestor.ingest()
+cleaned_text = ingestor.ingest()
+print(cleaned_text)
