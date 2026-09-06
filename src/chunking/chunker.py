@@ -1,12 +1,9 @@
 import json
 from typing import List
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer
 from config.settings import ChunkingConfig
-from utils import l
+from utils import log, CustomException
 
-settings = get_settings()
 
 class Chunker:
     def __init__(self, tokenizer, cleaned_docs: list[dict], cfg:ChunkingConfig) -> List:
@@ -25,7 +22,11 @@ class Chunker:
         """
         self.tokenizer = tokenizer
         self.docs = cleaned_docs
+        if not self.docs:
+            raise ValueError("docs is empty, Nothing to chunk")
         self.config = cfg
+        self.log = log()
+
 
 
 
