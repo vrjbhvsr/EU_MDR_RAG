@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import List
 from pathlib import Path
 from config.settings import ChunkingConfig
@@ -6,7 +7,7 @@ from utils import log, CustomException
 
 
 class Chunker:
-    def __init__(self, tokenizer, cleaned_docs: list[dict], cfg:ChunkingConfig) -> List:
+    def __init__(self, tokenizer, cleaned_docs: list[dict], cfg:ChunkingConfig):
         """Split parser output into <=max_tokens chunks, packed within each structural unit.
 
         Args:
@@ -18,12 +19,13 @@ class Chunker:
             Chunks as {"page_content": str, "metadata": dict}. No file I/O.
 
         Raises:
-            ValueError: if docs is empty.
+            Exception: if docs is empty.
         """
+        
+        if not cleaned_docs:
+            raise CustomException("docs is empty, Nothing to chunk",sys)
         self.tokenizer = tokenizer
         self.docs = cleaned_docs
-        if not self.docs:
-            raise ValueError("docs is empty, Nothing to chunk")
         self.config = cfg
         self.log = log()
 
