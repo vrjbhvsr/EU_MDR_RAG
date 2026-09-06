@@ -10,10 +10,13 @@ class IngestionConfig(BaseModel):
     cache_dir: Path = Path("data/cache")
 
 #------------------------------------------------------------------------------------------
+class EmbeddingConfig(BaseModel):
+    model_name: str = 'BAAI/bge-base-en-v1.5'
+
+#------------------------------------------------------------------------------------------
 
 class ChunkingConfig(BaseModel):
     """Configuration for Chunking Process."""
-    model_name: str = 'BAAI/bge-base-en-v1.5'
     max_tokens: int = 512
 
 
@@ -22,6 +25,7 @@ class ChunkingConfig(BaseModel):
 class Settings(BaseSettings):
     """Application settings for the data ingestion process."""
     ingestion: IngestionConfig = IngestionConfig()
+    embedding: EmbeddingConfig = EmbeddingConfig()
     chunking: ChunkingConfig = ChunkingConfig()
 
     class Config:

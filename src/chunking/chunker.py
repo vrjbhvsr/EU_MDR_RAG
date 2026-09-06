@@ -3,12 +3,13 @@ from typing import List
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer
-from config import get_settings
+from config.settings import ChunkingConfig
+from utils import l
 
 settings = get_settings()
 
 class Chunker:
-    def __init__(self, tokenizer, cleaned_docs: Path, config = get_settings()) -> List:
+    def __init__(self, tokenizer, cleaned_docs: list[dict], cfg:ChunkingConfig) -> List:
         """Split parser output into <=max_tokens chunks, packed within each structural unit.
 
         Args:
@@ -24,4 +25,7 @@ class Chunker:
         """
         self.tokenizer = tokenizer
         self.docs = cleaned_docs
-        self.chunking_settings = config.chunking
+        self.config = cfg
+
+
+

@@ -3,7 +3,7 @@ from config import get_settings
 from transformers import AutoTokenizer 
 
 settings = get_settings()
-tokenizer = AutoTokenizer.from_pretrained(settings.chunking.model_name)
+tokenizer = AutoTokenizer.from_pretrained(settings.embedding.model_name)
 
 
 raw_dir = settings.ingestion.raw_data_dir
