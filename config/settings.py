@@ -18,6 +18,20 @@ class EmbeddingConfig(BaseModel):
 class ChunkingConfig(BaseModel):
     """Configuration for Chunking Process."""
     max_tokens: int = 512
+    patterns: dict = {
+    "part"        : r'\nPART [A-Z] \n(.+)',
+    "simple"      : r'\n(\d+)\.\s*\n(.+)',
+    "decimal"     : r'(?:^|\n)(\d+\.\d+\.)(?!\d)\s+(.+)',   
+    "triple"      : r'(?:^|\n)(\d+\.\d+\.\d+\.)\s+(.+)',
+    "paren_letter": r'(?:^|\n)\(([a-z])\)\s+(.+)',          
+    "paren_num"   : r'(?:^|\n)\((\d+)\)\s+(.+)',  
+    "bullet"      : r'(?:^|\n)(—)\s+(.+)',          
+    }
+
+    marker_patterns:dict = {"pattern_annex" : "^(ANNEX [IVX]+) \n(.+)", 
+                       "pattern_chapter" : "^(CHAPTER [IVX]+) \n(.+)", 
+                       "pattern_section" : "^(SECTION [0-9]+) \n(.+)", 
+                       "pattern_article" :"^(Article [0-9]+) \n(?!Article)(?!— )(.+)"}
 
 
 ##############################################################################################
