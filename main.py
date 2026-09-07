@@ -18,4 +18,4 @@ cleaned_text = ingestor.ingest()
 
 chunker = Chunker(tokenizer, cleaned_text, settings.chunking)
 chunks = chunker.get_split_levels(cleaned_text[147].get("page_content", ""))
-print(chunks)
+

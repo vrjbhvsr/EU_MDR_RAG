@@ -58,7 +58,10 @@ class Chunker:
         try:
             self.log.info("Starting split level determination for the given page content.")
             if self._token_length(page_content) <= self.config.max_tokens:
+                self.log.info("Page content is within token limit, no splitting required.")
                 return ['no_split']
+            else:
+                self.log.info("Page content exceeds token limit, checking for split patterns. Token length: {}".format(self._token_length(page_content)))
 
             if re.search(self.config.patterns['part'], page_content):
                 split_levels.append("part")
