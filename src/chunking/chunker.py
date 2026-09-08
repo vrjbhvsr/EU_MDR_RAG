@@ -152,4 +152,47 @@ class Chunker:
         """
         return {"page_content": text, "metadata": metadata}
 
-    
+    def _pack(self, sub_chunks: List[dict], max_tokens: int) -> List[dict]:
+        """
+        Pack sub-chunks into larger chunks without exceeding the max_tokens limit.
+        This function takes the list of sub-chunks and iteratively adds them to a buffer until adding another sub-chunk would exceed the max_tokens limit. When that happens, it flushes the buffer into a packed chunk and starts a new buffer.
+
+        Args:
+            sub_chunks: List of sub-chunk dictionaries to be packed.
+            max_tokens: Maximum number of tokens allowed in a packed chunk. 
+        """
+
+        packed_chunks = []
+        buffer_chunk = ""
+        buffer_metadata = dict()
+
+        def flush():
+            """
+            Flush the buffer and add the current chunk to the packed chunks. This function is called when the buffer exceeds the max_tokens limit or when all sub-chunks have been processed. It creates a new chunk with the current buffer content and metadata, calculates its token length, and appends it to the packed_chunks list. After flushing, it resets the buffer and metadata for the next set of sub-chunks.
+            """
+            buffer_metadata['token_length'] = self._token_length(buffer_chunk)
+            packed_chunks.append(self._create_chunk(buffer_chunk, buffer_metadata.copy()))
+
+        for i, chunk in enumerate(sub_chunks):
+            candidate_chunk = buffer_chunk + "\n" + chunk.get("page_content", "") if buffer_chunk else chunk.get("page_content", "")
+
+            if self._token_length(candidate_chunk) > max_tokens and buffer_chunk:
+                flush()
+                buffer_chunk = chunk.get("page_content", "")
+                buffer_metadata = chunk.get("metadata", {}).copy()
+
+            else:
+                if not buffer_chunk:
+                    buffer_metadata = chunk.get("metadata", {}).copy()
+                buffer_chunk = candidate_chunk
+
+        if buffer_chunk:
+            flush()
+
+        total = len(packed_chunks)
+        self.log.info(f"Packed {len(sub_chunks)} sub-chunks into {total} chunks with max_tokens={max_tokens}.")
+        for number, c in (enumerate(packed_chunks, start = 1)):
+            c['metadata']['subchunk_id'] = number
+            c['metadata']['total_subchunks'] = total
+
+        return packed_chunks
