@@ -105,32 +105,51 @@ class Chunker:
         Returns:
             List[str]: A list of text pieces obtained after splitting.
         """
+        try:
 
-        matches = []   # collect the matched pieces abd their start and end positions
-        pieces = []    # collect the text pieces
+            matches = []   # collect the matched pieces abd their start and end positions
+            pieces = []    # collect the text pieces
 
-        # regex's finditer returns an iterator yielding match objects over all non-overlapping matches for the RE pattern in string.
+            # regex's finditer returns an iterator yielding match objects over all non-overlapping matches for the RE pattern in string.
 
-        search = re.finditer(pattern, text, re.M)
+            search = re.finditer(pattern, text, re.M)
 
-        for match in search:
-            matches.append((match.start(), match.group()))
+            for match in search:
+                matches.append((match.start(), match.group()))
 
-        if not matches:
-            return [text]
+            if not matches:
+                return [text]
 
-        if matches and matches[0][0] > 0:
-            matches.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
+            if matches and matches[0][0] > 0:
+                matches.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
 
 
-        # iterate through matches and use their start postions to slice the text into pieces
-        for i, mark in enumerate(matches):
-            if isinstance(mark, tuple):
-                if i < len(matches) - 1:
-                    pieces.append(text[mark[0]:matches[i + 1][0]])
-                else:
-                    pieces.append(text[mark[0]:])  # add the last piece from the last match to the end of the text
+            # iterate through matches and use their start postions to slice the text into pieces
+            for i, mark in enumerate(matches):
+                if isinstance(mark, tuple):
+                    if i < len(matches) - 1:
+                        pieces.append(text[mark[0]:matches[i + 1][0]])
+                    else:
+                        pieces.append(text[mark[0]:])  # add the last piece from the last match to the end of the text
 
-        return pieces
+            return pieces
+        except Exception as e:
+            self.log.exception(f"An error occurred while splitting text into pieces: {str(e)}")
+            raise CustomException(f"An error occurred while splitting text into pieces: {str(e), sys}") from e
 
         
+
+    def _create_chunk(self, text: str, metadata: dict) -> dict:
+        """
+        Create a chunk with the given text and metadata.
+
+        Args:
+            text: The text content of the chunk.
+            metadata: The metadata associated with the chunk.
+
+        Returns:
+            dict: A dictionary representing the chunk with 'page_content' and 'metadata'.
+        """
+        return {"page_content": text, "metadata": metadata}
+
+    
