@@ -42,7 +42,7 @@ class Chunker:
         """
         return len(self.tokenizer.encode(page_content))
 
-    def get_split_levels(self, page_content: str) -> List[str]:
+    def _get_split_levels(self, page_content: str) -> List[str]:
         """
         Determine the split levels for the given page content based on the configured patterns.
         It checks the levels in order of priority and returns a list of matching split levels.
@@ -65,20 +65,72 @@ class Chunker:
 
             if re.search(self.config.patterns['part'], page_content):
                 split_levels.append("part")
+
             if re.search(self.config.patterns['simple'], page_content):
                 split_levels.append("simple")
+
             if re.search(self.config.patterns['decimal'], page_content):
                 split_levels.append("decimal")
+
             if re.search(self.config.patterns['triple'], page_content):
                 split_levels.append("triple")
+
             if re.search(self.config.patterns['paren_letter'], page_content):
                 split_levels.append("paren_letter")
+
             if re.search(self.config.patterns['paren_num'], page_content):
                 split_levels.append("paren_num")
+
             if re.search(self.config.patterns['bullet'], page_content):
                 split_levels.append("bullet")
+
             self.log.info(f"Split levels determined successfully: {split_levels}")
+
             return split_levels
+        
         except Exception as e:
             self.log.exception(f"An error occurred while determining split levels: {str(e)}")
             raise CustomException(f"An error occurred while determining split levels: {str(e), sys}") from e
+
+    def _get_text_pieces(self, pattern: any, text: str) -> List[str]:
+        """
+        Split the text into pieces based on the provided patterns.
+
+        This function take a single regex pattern and splits the text into pieces based on that pattern. It collects the matched pieces along with their start and end positions, and returns a list of text pieces obtained after splitting.
+
+        Args:
+            patterns: A list of regex patterns to split the text.
+            text: The text to be split.
+
+        Returns:
+            List[str]: A list of text pieces obtained after splitting.
+        """
+
+        matches = []   # collect the matched pieces abd their start and end positions
+        pieces = []    # collect the text pieces
+
+        # regex's finditer returns an iterator yielding match objects over all non-overlapping matches for the RE pattern in string.
+
+        search = re.finditer(pattern, text, re.M)
+
+        for match in search:
+            matches.append((match.start(), match.group()))
+
+        if not matches:
+            return [text]
+
+        if matches and matches[0][0] > 0:
+            matches.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
+
+
+        # iterate through matches and use their start postions to slice the text into pieces
+        for i, mark in enumerate(matches):
+            if isinstance(mark, tuple):
+                if i < len(matches) - 1:
+                    pieces.append(text[mark[0]:matches[i + 1][0]])
+                else:
+                    pieces.append(text[mark[0]:])  # add the last piece from the last match to the end of the text
+
+        return pieces
+
+        
