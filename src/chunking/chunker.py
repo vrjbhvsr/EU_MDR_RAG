@@ -196,3 +196,101 @@ class Chunker:
             c['metadata']['total_subchunks'] = total
 
         return packed_chunks
+
+    def _break_the_docs(self, page_content: str, metadata: dict, prefix: str = "") -> List[dict]:
+        """
+        Break the page content into smaller chunks based on the configured split levels and patterns.
+        This function first determines the appropriate split levels for the given page content. It then iteratively splits the content based on the identified patterns, creating sub-chunks. If any sub-chunk exceeds the maximum token limit, it is further split into smaller chunks. Finally, all sub-chunks are packed into larger chunks without exceeding the max_tokens limit.
+
+        Basically, if the strucutral unit is over and chunk length is less than max_tokens, it is returned as is. If the strucutral unit is over and chunk length is more than max_tokens, it is split into smaller chunks based on the configured patterns. 
+
+        Args:
+            page_content: The content of the page to be broken into chunks.
+            metadata: The metadata associated with the page content.
+            prefix: An optional prefix to be added to the metadata of each chunk.
+
+        Returns:
+            List[dict]: A list of chunk dictionaries, each containing 'page_content' and 'metadata'.
+        """
+        try:
+            split_levels = self._get_split_levels(page_content)         # Get the split levels for the page content based on the configured patterns.
+
+
+            # If the page content is within the max_tokens limit, return it as a single chunk with the provided prefix (if any) and updated metadata.
+            if self._token_length(page_content) <= self.config.max_tokens:
+                if prefix:
+                    final_content = f"{prefix}\n{page_content}"
+                else:
+                    final_content = page_content
+
+                new_metadata = metadata.copy()
+                new_metadata['token_length'] = self._token_length(final_content)
+                self.log.info("Page content is within token limit, returning as a single chunk.")
+                return [self._create_chunk(final_content, new_metadata)]
+
+            # If no split levels are found, return the entire page content as a single chunk with the provided prefix (if any) and updated metadata.
+            if not split_levels:
+                if prefix:
+                    final_content = f"{prefix}\n{page_content}"
+                else:
+                    final_content = page_content
+
+                new_metadata = metadata.copy()
+                new_metadata['token_length'] = self._token_length(final_content)
+                self.log.info("No split levels found, returning as a single chunk.")
+                return [self._create_chunk(final_content, new_metadata)]
+
+            # If split levels are found, iteratively split the page content based on the identified patterns. For each split level, the content is divided into sub-chunks. If any sub-chunk exceeds the maximum token limit, it is further split into smaller chunks. Finally, all sub-chunks are packed into larger chunks without exceeding the max_tokens limit.
+
+            current_level = split_levels[0]
+            remaining_levels = split_levels[1:]
+
+            text_pieces = self._get_text_pieces(pattern= self.config.patterns[current_level], text= page_content)
+            if not text_pieces:
+                text_pieces = [page_content]
+
+            sub_chunks = []
+
+            for piece in text_pieces:
+                # If the current split level has a corresponding pattern, attempt to match it in the piece. If a match is found, extract the header and create a new prefix by appending the header to the existing prefix. This helps to describe the context of the chunk for the model.
+                match = re.match(self.config.patterns[current_level], piece)
+                if match:
+                    header = match.group()
+                    new_prefix = prefix + "-" + header if prefix else header
+                    piece.replace(header,"")
+
+                else:
+                    new_prefix = prefix
+
+                sub_chunks.extend(self._break_the_docs(piece, metadata, prefix=new_prefix))
+            return self._pack(sub_chunks, max_tokens=self.config.max_tokens)
+                
+            self.log.info("Finished breaking the docs into chunks successfully.")
+        except Exception as e:
+            self.log.exception(f"An error occurred while breaking the docs: {str(e)}")
+            raise CustomException(f"An error occurred while breaking the docs: {str(e), sys}") from e       
+
+    def chunk_docs(self) -> List[dict]:
+        """
+        Chunk the cleaned documents into smaller pieces based on the configured split levels and patterns.
+        This function iterates through each document in the cleaned_docs list, breaking the page content into smaller chunks using the _break_the_docs method. It collects all the resulting chunks and returns them as a list.
+
+        Returns:
+            List[dict]: A list of chunk dictionaries, each containing 'page_content' and 'metadata'.
+        """
+        try:
+            all_chunks = []
+            for doc in self.docs:
+                page_content = doc.get("page_content", "")
+                metadata = doc.get("metadata", {})
+                chunks = self._break_the_docs(page_content, metadata)
+                all_chunks.extend(chunks)
+
+            over_512_chunks = [chunk for chunk in all_chunks if chunk['metadata']['token_length'] > 512]
+            if over_512_chunks:
+                self.log.warning(f"Found {len(over_512_chunks)} chunks with token length > 512.")
+            self.log.info(f"Successfully chunked {len(self.docs)} documents into {len(all_chunks)} total chunks.")
+            return all_chunks
+        except Exception as e:
+            self.log.exception(f"An error occurred while chunking documents: {str(e)}")
+            raise CustomException(f"An error occurred while chunking documents: {str(e), sys}") from e
