@@ -251,7 +251,7 @@ class Chunker:
             if match:
                 header = match.group()
                 new_prefix = prefix + "-" + header if prefix else header
-                piece.replace(header,"")
+                piece = piece.replace(header, "")
 
             else:
                 new_prefix = prefix
@@ -269,7 +269,7 @@ class Chunker:
         Returns:
             List[dict]: A list of chunk dictionaries, each containing 'page_content' and 'metadata'.
         """
-        try:
+        try:    
             all_chunks = []
             for doc in self.docs:
                 page_content = doc.get("page_content")
@@ -282,7 +282,41 @@ class Chunker:
             if over_512_chunks:
                 self.log.warning(f"Found {len(over_512_chunks)} chunks with token length > 512.")
             self.log.info(f"Successfully chunked {len(self.docs)} documents into {len(all_chunks)} total chunks.")
-            return all_chunks
+            docs = [doc for doc in all_chunks if not self._is_header_only(doc)]
+            self.log.info(f"Removed {len(all_chunks) - len(docs)} header-only documents, leaving {len(docs)} documents for chunking.")
+            return docs
         except Exception as e:
             self.log.exception(f"An error occurred while chunking documents: {str(e)}")
             raise CustomException(f"An error occurred while chunking documents: {str(e)}",sys) from e
+
+
+    def _is_header_only(self, doc: dict) -> bool:
+        """
+        Check if the given text consists only of a header based on the configured patterns.
+        This function checks if the provided text matches any of the configured header patterns. If a match is found, it indicates that the text is likely a header and returns True; otherwise, it returns False.
+
+        Args:
+            doc: The document dictionary containing the text to be checked for header-only content.
+
+        Returns:
+            bool: True if the text is header-only, False otherwise.
+        """
+        body = doc.get("page_content")
+        metadata = doc.get("metadata")
+
+        def field(key):
+                v = metadata.get(key, '')
+                return str(v) if v is not None else ''
+        
+        title_only = body in (
+            (field('section') + field('section_title')).strip(),
+            (field('chapter') + field('chapter_title')).strip(),
+            (field('annex')   + field('annex_title')).strip(),
+        )
+        bare = re.match(
+            r'^(SECTION \d+|CHAPTER [IVX]+|ANNEX [IVX]+)\s*\n[A-Za-z][\w\s,&-]*\s*$',
+            body
+        )
+        return bool(title_only or (self._token_length(body) < 20 and bare))
+    
+    
