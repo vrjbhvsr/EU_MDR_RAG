@@ -118,7 +118,7 @@ class Chunker:
             return [text]
 
         if matches and matches[0][0] > 0:
-            matches.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
+            pieces.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
 
 
         # iterate through matches and use their start postions to slice the text into pieces
