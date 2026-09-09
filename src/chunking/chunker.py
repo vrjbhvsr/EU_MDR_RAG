@@ -55,42 +55,41 @@ class Chunker:
             List[str]: A list of split levels that match the patterns in the configuration.
         """
         split_levels = []
-        try:
-            self.log.info("Starting split level determination for the given page content.")
-            if self._token_length(page_content) <= self.config.max_tokens:
-                self.log.info("Page content is within token limit, no splitting required.")
-                return ['no_split']
-            else:
-                self.log.info("Page content exceeds token limit, checking for split patterns. Token length: {}".format(self._token_length(page_content)))
+    
+        #self.log.info("Starting split level determination for the given page content.")
+        if self._token_length(page_content) <= self.config.max_tokens:
+            #self.log.info("Page content is within token limit, no splitting required.")
+            return ['no_split']
+        else:
+            #self.log.info("Page content exceeds token limit, checking for split patterns. Token length: {}".format(self._token_length(page_content)))
+            pass
 
-            if re.search(self.config.patterns['part'], page_content):
-                split_levels.append("part")
+        if re.search(self.config.patterns['part'], page_content):
+            split_levels.append("part")
 
-            if re.search(self.config.patterns['simple'], page_content):
-                split_levels.append("simple")
+        if re.search(self.config.patterns['simple'], page_content):
+            split_levels.append("simple")
 
-            if re.search(self.config.patterns['decimal'], page_content):
-                split_levels.append("decimal")
+        if re.search(self.config.patterns['decimal'], page_content):
+            split_levels.append("decimal")
 
-            if re.search(self.config.patterns['triple'], page_content):
-                split_levels.append("triple")
+        if re.search(self.config.patterns['triple'], page_content):
+            split_levels.append("triple")
 
-            if re.search(self.config.patterns['paren_letter'], page_content):
-                split_levels.append("paren_letter")
+        if re.search(self.config.patterns['paren_letter'], page_content):
+            split_levels.append("paren_letter")
 
-            if re.search(self.config.patterns['paren_num'], page_content):
-                split_levels.append("paren_num")
+        if re.search(self.config.patterns['paren_num'], page_content):
+            split_levels.append("paren_num")
 
-            if re.search(self.config.patterns['bullet'], page_content):
-                split_levels.append("bullet")
+        if re.search(self.config.patterns['bullet'], page_content):
+            split_levels.append("bullet")
 
-            self.log.info(f"Split levels determined successfully: {split_levels}")
+        #self.log.info(f"Split levels determined successfully: {split_levels}")
 
-            return split_levels
+        return split_levels
         
-        except Exception as e:
-            self.log.exception(f"An error occurred while determining split levels: {str(e)}")
-            raise CustomException(f"An error occurred while determining split levels: {str(e), sys}") from e
+       
 
     def _get_text_pieces(self, pattern: any, text: str) -> List[str]:
         """
@@ -105,38 +104,32 @@ class Chunker:
         Returns:
             List[str]: A list of text pieces obtained after splitting.
         """
-        try:
+        matches = []   # collect the matched pieces abd their start and end positions
+        pieces = []    # collect the text pieces
 
-            matches = []   # collect the matched pieces abd their start and end positions
-            pieces = []    # collect the text pieces
+        # regex's finditer returns an iterator yielding match objects over all non-overlapping matches for the RE pattern in string.
 
-            # regex's finditer returns an iterator yielding match objects over all non-overlapping matches for the RE pattern in string.
+        search = re.finditer(pattern, text, re.M)
 
-            search = re.finditer(pattern, text, re.M)
+        for match in search:
+            matches.append((match.start(), match.group()))
 
-            for match in search:
-                matches.append((match.start(), match.group()))
+        if not matches:
+            return [text]
 
-            if not matches:
-                return [text]
-
-            if matches and matches[0][0] > 0:
-                matches.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
+        if matches and matches[0][0] > 0:
+            matches.insert(0, text[0:matches[0][0]])  # if the first match doesn't start at the beginning of the text, add the text before the first match as a piece
 
 
-            # iterate through matches and use their start postions to slice the text into pieces
-            for i, mark in enumerate(matches):
-                if isinstance(mark, tuple):
-                    if i < len(matches) - 1:
-                        pieces.append(text[mark[0]:matches[i + 1][0]])
-                    else:
-                        pieces.append(text[mark[0]:])  # add the last piece from the last match to the end of the text
+        # iterate through matches and use their start postions to slice the text into pieces
+        for i, mark in enumerate(matches):
+            if isinstance(mark, tuple):
+                if i < len(matches) - 1:
+                    pieces.append(text[mark[0]:matches[i + 1][0]])
+                else:
+                    pieces.append(text[mark[0]:])  # add the last piece from the last match to the end of the text
 
-            return pieces
-        except Exception as e:
-            self.log.exception(f"An error occurred while splitting text into pieces: {str(e)}")
-            raise CustomException(f"An error occurred while splitting text into pieces: {str(e), sys}") from e
-
+        return pieces
         
 
     def _create_chunk(self, text: str, metadata: dict) -> dict:
@@ -174,30 +167,30 @@ class Chunker:
             packed_chunks.append(self._create_chunk(buffer_chunk, buffer_metadata.copy()))
 
         for i, chunk in enumerate(sub_chunks):
-            candidate_chunk = buffer_chunk + "\n" + chunk.get("page_content", "") if buffer_chunk else chunk.get("page_content", "")
+            candidate_chunk = buffer_chunk + "\n" + chunk.get("page_content") if buffer_chunk else chunk.get("page_content")
 
             if self._token_length(candidate_chunk) > max_tokens and buffer_chunk:
                 flush()
-                buffer_chunk = chunk.get("page_content", "")
-                buffer_metadata = chunk.get("metadata", {}).copy()
+                buffer_chunk = chunk.get("page_content")
+                buffer_metadata = chunk.get("metadata").copy()
 
             else:
                 if not buffer_chunk:
-                    buffer_metadata = chunk.get("metadata", {}).copy()
+                    buffer_metadata = chunk.get("metadata").copy()
                 buffer_chunk = candidate_chunk
 
         if buffer_chunk:
             flush()
 
         total = len(packed_chunks)
-        self.log.info(f"Packed {len(sub_chunks)} sub-chunks into {total} chunks with max_tokens={max_tokens}.")
+        #self.log.info(f"Packed {len(sub_chunks)} sub-chunks into {total} chunks with max_tokens={max_tokens}.")
         for number, c in (enumerate(packed_chunks, start = 1)):
             c['metadata']['subchunk_id'] = number
             c['metadata']['total_subchunks'] = total
 
         return packed_chunks
 
-    def _break_the_docs(self, page_content: str, metadata: dict, prefix: str = "") -> List[dict]:
+    def _break_the_docs(self, page_content: str, metadata: dict, split_levels: List[str], prefix: str = "",) -> List[dict]:
         """
         Break the page content into smaller chunks based on the configured split levels and patterns.
         This function first determines the appropriate split levels for the given page content. It then iteratively splits the content based on the identified patterns, creating sub-chunks. If any sub-chunk exceeds the maximum token limit, it is further split into smaller chunks. Finally, all sub-chunks are packed into larger chunks without exceeding the max_tokens limit.
@@ -207,69 +200,67 @@ class Chunker:
         Args:
             page_content: The content of the page to be broken into chunks.
             metadata: The metadata associated with the page content.
+            split_levels: The levels at which to split the page content.
             prefix: An optional prefix to be added to the metadata of each chunk.
 
         Returns:
             List[dict]: A list of chunk dictionaries, each containing 'page_content' and 'metadata'.
         """
-        try:
-            split_levels = self._get_split_levels(page_content)         # Get the split levels for the page content based on the configured patterns.
+        
+        #split_levels = self._get_split_levels(page_content)         # Get the split levels for the page content based on the configured patterns.
 
 
-            # If the page content is within the max_tokens limit, return it as a single chunk with the provided prefix (if any) and updated metadata.
-            if self._token_length(page_content) <= self.config.max_tokens:
-                if prefix:
-                    final_content = f"{prefix}\n{page_content}"
-                else:
-                    final_content = page_content
+        # If the page content is within the max_tokens limit, return it as a single chunk with the provided prefix (if any) and updated metadata.
+        if self._token_length(page_content) <= self.config.max_tokens:
+            if prefix:
+                final_content = f"{prefix}\n{page_content}"
+            else:
+                final_content = page_content
 
-                new_metadata = metadata.copy()
-                new_metadata['token_length'] = self._token_length(final_content)
-                self.log.info("Page content is within token limit, returning as a single chunk.")
-                return [self._create_chunk(final_content, new_metadata)]
+            new_metadata = metadata.copy()
+            new_metadata['token_length'] = self._token_length(final_content)
+            #self.log.info("Page content is within token limit, returning as a single chunk.")
+            return [self._create_chunk(final_content, new_metadata)]
 
-            # If no split levels are found, return the entire page content as a single chunk with the provided prefix (if any) and updated metadata.
-            if not split_levels:
-                if prefix:
-                    final_content = f"{prefix}\n{page_content}"
-                else:
-                    final_content = page_content
+        # If no split levels are found, return the entire page content as a single chunk with the provided prefix (if any) and updated metadata.
+        if not split_levels:
+            if prefix:
+                final_content = f"{prefix}\n{page_content}"
+            else:
+                final_content = page_content
 
-                new_metadata = metadata.copy()
-                new_metadata['token_length'] = self._token_length(final_content)
-                self.log.info("No split levels found, returning as a single chunk.")
-                return [self._create_chunk(final_content, new_metadata)]
+            new_metadata = metadata.copy()
+            new_metadata['token_length'] = self._token_length(final_content)
+            #self.log.info("No split levels found, returning as a single chunk.")
+            return [self._create_chunk(final_content, new_metadata)]
 
-            # If split levels are found, iteratively split the page content based on the identified patterns. For each split level, the content is divided into sub-chunks. If any sub-chunk exceeds the maximum token limit, it is further split into smaller chunks. Finally, all sub-chunks are packed into larger chunks without exceeding the max_tokens limit.
+        # If split levels are found, iteratively split the page content based on the identified patterns. For each split level, the content is divided into sub-chunks. If any sub-chunk exceeds the maximum token limit, it is further split into smaller chunks. Finally, all sub-chunks are packed into larger chunks without exceeding the max_tokens limit.
 
-            current_level = split_levels[0]
-            remaining_levels = split_levels[1:]
+        current_level = split_levels[0]
+        remaining_levels = split_levels[1:]
 
-            text_pieces = self._get_text_pieces(pattern= self.config.patterns[current_level], text= page_content)
-            if not text_pieces:
-                text_pieces = [page_content]
+        text_pieces = self._get_text_pieces(pattern= self.config.patterns[current_level], text= page_content)
+        if not text_pieces:
+            text_pieces = [page_content]
 
-            sub_chunks = []
+        sub_chunks = []
 
-            for piece in text_pieces:
-                # If the current split level has a corresponding pattern, attempt to match it in the piece. If a match is found, extract the header and create a new prefix by appending the header to the existing prefix. This helps to describe the context of the chunk for the model.
-                match = re.match(self.config.patterns[current_level], piece)
-                if match:
-                    header = match.group()
-                    new_prefix = prefix + "-" + header if prefix else header
-                    piece.replace(header,"")
+        for piece in text_pieces:
+            # If the current split level has a corresponding pattern, attempt to match it in the piece. If a match is found, extract the header and create a new prefix by appending the header to the existing prefix. This helps to describe the context of the chunk for the model.
+            match = re.match(self.config.patterns[current_level], piece)
+            if match:
+                header = match.group()
+                new_prefix = prefix + "-" + header if prefix else header
+                piece.replace(header,"")
 
-                else:
-                    new_prefix = prefix
-
-                sub_chunks.extend(self._break_the_docs(piece, metadata, prefix=new_prefix))
-            return self._pack(sub_chunks, max_tokens=self.config.max_tokens)
-                
-            self.log.info("Finished breaking the docs into chunks successfully.")
-        except Exception as e:
-            self.log.exception(f"An error occurred while breaking the docs: {str(e)}")
-            raise CustomException(f"An error occurred while breaking the docs: {str(e), sys}") from e       
-
+            else:
+                new_prefix = prefix
+    
+            sub_chunks.extend(self._break_the_docs(piece, metadata, remaining_levels, prefix=new_prefix))
+        return self._pack(sub_chunks, max_tokens=self.config.max_tokens)
+            
+        #self.log.info("Finished breaking the docs into chunks successfully.")
+  
     def chunk_docs(self) -> List[dict]:
         """
         Chunk the cleaned documents into smaller pieces based on the configured split levels and patterns.
@@ -281,9 +272,10 @@ class Chunker:
         try:
             all_chunks = []
             for doc in self.docs:
-                page_content = doc.get("page_content", "")
-                metadata = doc.get("metadata", {})
-                chunks = self._break_the_docs(page_content, metadata)
+                page_content = doc.get("page_content")
+                metadata = doc.get("metadata")
+                split_levels = self._get_split_levels(page_content)
+                chunks = self._break_the_docs(page_content, metadata, split_levels)
                 all_chunks.extend(chunks)
 
             over_512_chunks = [chunk for chunk in all_chunks if chunk['metadata']['token_length'] > 512]
@@ -293,4 +285,4 @@ class Chunker:
             return all_chunks
         except Exception as e:
             self.log.exception(f"An error occurred while chunking documents: {str(e)}")
-            raise CustomException(f"An error occurred while chunking documents: {str(e), sys}") from e
+            raise CustomException(f"An error occurred while chunking documents: {str(e)}",sys) from e

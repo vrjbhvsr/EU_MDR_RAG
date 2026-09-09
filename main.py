@@ -17,5 +17,5 @@ ingestor = Document_Ingestor(raw_dir, processed_dir)
 cleaned_text = ingestor.ingest()
 
 chunker = Chunker(tokenizer, cleaned_text, settings.chunking)
-
+chunks = chunker.chunk_docs()
 
