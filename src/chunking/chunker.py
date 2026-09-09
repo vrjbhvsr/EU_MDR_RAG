@@ -289,6 +289,8 @@ class Chunker:
             self.log.exception(f"An error occurred while chunking documents: {str(e)}")
             raise CustomException(f"An error occurred while chunking documents: {str(e)}",sys) from e
 
+    def _norm(self, s):
+        return " ".join(str(s or "").split())
 
     def _is_header_only(self, doc: dict) -> bool:
         """
@@ -301,22 +303,29 @@ class Chunker:
         Returns:
             bool: True if the text is header-only, False otherwise.
         """
-        body = doc.get("page_content")
+        body = self._norm(doc.get("page_content"))
         metadata = doc.get("metadata")
 
         def field(key):
                 v = metadata.get(key, '')
                 return str(v) if v is not None else ''
         
-        title_only = body in (
-            (field('section') + field('section_title')).strip(),
-            (field('chapter') + field('chapter_title')).strip(),
-            (field('annex')   + field('annex_title')).strip(),
-        )
-        bare = re.match(
-            r'^(SECTION \d+|CHAPTER [IVX]+|ANNEX [IVX]+)\s*\n[A-Za-z][\w\s,&-]*\s*$',
+        candidates = []
+        for mk, tk in (('section', 'section_title'),
+                        ('chapter', 'chapter_title'),
+                        ('annex',   'annex_title')):
+            marker, title = field(mk), field(tk)
+            if marker or title:
+                candidates.append(self._norm(marker + " " + title))
+                candidates.append(self._norm(marker + title))
+        title_only = body in candidates
+    
+        bare = re.fullmatch(
+            r'(?:(?:Article\s+\d+|ANNEX\s+[IVXLC]+|CHAPTER\s+[IVXLC]+|SECTION\s+\d+)\s+)*'  # leading noise
+            r'(?:SECTION\s+\d+|CHAPTER\s+[IVXLC]+|ANNEX\s+[IVXLC]+)\s+'                     # real marker
+            r'[A-Z][A-Za-z0-9 ,()&/\'’\-–]+',                                              # title, no periods
             body
         )
-        return bool(title_only or (self._token_length(body) < 20 and bare))
+        return bool(title_only or bare)
     
     

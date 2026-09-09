@@ -15,7 +15,8 @@ embedding_model = settings.embedding.model_name
 
 ingestor = Document_Ingestor(raw_dir, processed_dir)
 cleaned_text = ingestor.ingest()
-
-chunker = Chunker(tokenizer, cleaned_text, settings.chunking)
+#print("raw: \n", cleaned_text[0:2])
+chunker = Chunker(tokenizer, cleaned_text[0:1], settings.chunking)
 chunks = chunker.chunk_docs()
 
+print(chunks[0])
