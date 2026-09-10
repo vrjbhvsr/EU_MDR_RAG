@@ -1,6 +1,7 @@
 import json
 import sys
 import re
+import hashlib
 from typing import List
 from pathlib import Path
 from config.settings import ChunkingConfig
@@ -261,33 +262,7 @@ class Chunker:
             
         #self.log.info("Finished breaking the docs into chunks successfully.")
   
-    def chunk_docs(self) -> List[dict]:
-        """
-        Chunk the cleaned documents into smaller pieces based on the configured split levels and patterns.
-        This function iterates through each document in the cleaned_docs list, breaking the page content into smaller chunks using the _break_the_docs method. It collects all the resulting chunks and returns them as a list.
-
-        Returns:
-            List[dict]: A list of chunk dictionaries, each containing 'page_content' and 'metadata'.
-        """
-        try:    
-            all_chunks = []
-            for doc in self.docs:
-                page_content = doc.get("page_content")
-                metadata = doc.get("metadata")
-                split_levels = self._get_split_levels(page_content)
-                chunks = self._break_the_docs(page_content, metadata, split_levels)
-                all_chunks.extend(chunks)
-
-            over_512_chunks = [chunk for chunk in all_chunks if chunk['metadata']['token_length'] > 512]
-            if over_512_chunks:
-                self.log.warning(f"Found {len(over_512_chunks)} chunks with token length > 512.")
-            self.log.info(f"Successfully chunked {len(self.docs)} documents into {len(all_chunks)} total chunks.")
-            docs = [doc for doc in all_chunks if not self._is_header_only(doc)]
-            self.log.info(f"Removed {len(all_chunks) - len(docs)} header-only documents, leaving {len(docs)} documents for chunking.")
-            return docs
-        except Exception as e:
-            self.log.exception(f"An error occurred while chunking documents: {str(e)}")
-            raise CustomException(f"An error occurred while chunking documents: {str(e)}",sys) from e
+    
 
     def _norm(self, s):
         return " ".join(str(s or "").split())
@@ -327,5 +302,52 @@ class Chunker:
             body
         )
         return bool(title_only or bare)
+
+    def _hash_chunk(self, doc: dict) -> str:
+        """
+        Generate a hash for the given chunk based on its content and metadata.
+        This function creates a unique hash for the provided chunk by serializing its content and metadata into a JSON string and then computing the hash of that string. The resulting hash can be used to uniquely identify the chunk.
+
+        Args:
+            doc: The document dictionary containing 'page_content' and 'metadata'.   
+        """
+
+        # Generate a hash for the given chunk based on its content and updated metadata. The hash is computed using the SHA-256 algorithm on the serialized JSON representation of the chunk's content and metadata. The resulting hash is added to the metadata as 'hash_id' and returned along with the updated chunk.
+        page_content = doc.get("page_content")
+        metadata = doc.get("metadata")
+        hash_id = hashlib.sha256(page_content.encode("utf-8")).hexdigest()
+        metadata['hash_id'] = hash_id
+        doc = {"page_content": page_content, "metadata": metadata}
+        return doc
+
     
+    def chunk_docs(self) -> List[dict]:
+            """
+            Chunk the cleaned documents into smaller pieces based on the configured split levels and patterns.
+            This function iterates through each document in the cleaned_docs list, breaking the page content into smaller chunks using the _break_the_docs method. It collects all the resulting chunks and returns them as a list.
     
+            Returns:
+                List[dict]: A list of chunk dictionaries, each containing 'page_content' and 'metadata'.
+            """
+            try:    
+                all_chunks = []
+                for doc in self.docs:
+                    page_content = doc.get("page_content")
+                    metadata = doc.get("metadata")
+                    split_levels = self._get_split_levels(page_content)
+                    chunks = self._break_the_docs(page_content, metadata, split_levels)
+                    all_chunks.extend(chunks)
+    
+                over_512_chunks = [chunk for chunk in all_chunks if chunk['metadata']['token_length'] > 512]
+                if over_512_chunks:
+                    self.log.warning(f"Found {len(over_512_chunks)} chunks with token length > 512.")
+                self.log.info(f"Successfully chunked {len(self.docs)} documents into {len(all_chunks)} total chunks.")
+                documents = [doc for doc in all_chunks if not self._is_header_only(doc)]
+                self.log.info(f"Removed {len(all_chunks) - len(documents)} header-only documents, leaving {len(documents)} documents for chunking.")
+                hashed_docs = [self._hash_chunk(doc) for doc in documents]
+                return hashed_docs
+
+    
+            except Exception as e:
+                self.log.exception(f"An error occurred while chunking documents: {str(e)}")
+                raise CustomException(f"An error occurred while chunking documents: {str(e)}",sys) from e
