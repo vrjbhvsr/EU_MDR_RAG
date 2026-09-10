@@ -15,3 +15,4 @@ venv/
 .log
 *.log
 Bug_Tracker/
+extra_curricular.py
