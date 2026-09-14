@@ -315,8 +315,13 @@ class Chunker:
         # Generate a hash for the given chunk based on its content and updated metadata. The hash is computed using the SHA-256 algorithm on the serialized JSON representation of the chunk's content and metadata. The resulting hash is added to the metadata as 'hash_id' and returned along with the updated chunk.
         page_content = doc.get("page_content")
         metadata = doc.get("metadata")
-        hash_id = hashlib.sha256(page_content.encode("utf-8")).hexdigest()
-        metadata['hash_id'] = hash_id
+        article = metadata.get("article")
+        annex = metadata.get("annex")
+        chapter = metadata.get("chapter")
+        pc = doc.get("page_content")
+        key = f"{article}_{annex}_{chapter}_{pc}"
+        hash_id = hashlib.sha256(key.encode("utf-8")).hexdigest()
+        metadata["chunk_id"] = hash_id
         doc = {"page_content": page_content, "metadata": metadata}
         return doc
 
@@ -344,18 +349,7 @@ class Chunker:
                 self.log.info(f"Successfully chunked {len(self.docs)} documents into {len(all_chunks)} total chunks.")
                 documents = [doc for doc in all_chunks if not self._is_header_only(doc)]
                 self.log.info(f"Removed {len(all_chunks) - len(documents)} header-only documents, leaving {len(documents)} documents for chunking.")
-
-                # Generate a hash for each chunk based on its content and metadata, and add the hash to the metadata as 'hash_id'. The resulting list of hashed documents is returned.
-                hashed_docs = []
-                for doc in documents:
-                    article = doc.get("metadata").get("article")
-                    annex = doc.get("metadata").get("annex")
-                    chapter = doc.get("metadata").get("chapter")
-                    pc = doc.get("page_content")
-                    key = f"{article}_{annex}_{chapter}_{pc}"
-                    hash_id = hashlib.sha256(key.encode("utf-8")).hexdigest()
-                    doc["metadata"]["hash_id"] = hash_id
-                    hashed_docs.append(doc)
+                hashed_docs = [self._hash_chunk(doc) for doc in documents]
                 return hashed_docs
 
     
