@@ -33,7 +33,14 @@ class ChunkingConfig(BaseModel):
                        "pattern_section" : "^(SECTION [0-9]+) \n(.+)", 
                        "pattern_article" :"^(Article [0-9]+) \n(?!Article)(?!— )(.+)"}
 
-
+class DBConfig(BaseModel):
+    database_path: Path|str =  Path("data/database/chromadb/")
+    collection_config: dict = {
+                                "hnsw": {
+                                        "space": "cosine",
+                                        "ef_construction": 300
+                                            }
+                                }
 ##############################################################################################
 
 class Settings(BaseSettings):
