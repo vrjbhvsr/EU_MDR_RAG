@@ -4,7 +4,7 @@ import torch
 import sys
 from pathlib import Path
 from src.utils import log, CustomException
-from config.settings import DBConfig, EmbeddingConfig
+from config.settings import DBConfig
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 
