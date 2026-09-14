@@ -10,7 +10,7 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 
 # Define vector store class
 class VectorStore:
-    def __init__(self, database_path: str, model_name: str, cfg: DBConfig):
+    def __init__(self,cfg: DBConfig):
         """
         Initialize the VectorStore class.
         Args:
@@ -19,15 +19,14 @@ class VectorStore:
             cfg (DBConfig): Configuration for the database.
         """
 
-        self.path = database_path
-        self.model_name = model_name
         self.config = cfg
+        self.path = self.config.database_path
 
         if not os.path.isdir(self.path):
             os.makedirs(self.path, exist_ok=True)
 
     # create a persistent client where we store the database
-    def _create_client(self) -> chromadb.api.client.Client:
+    def create_or_get_client(self) -> chromadb.api.client.Client:
         """
         Create a persistent ChromaDB client.
         
@@ -53,7 +52,7 @@ class VectorStore:
             return True
         return False
 
-    def _embedding_function(self):
+    def _embedding_function(self, model_name):
         """
         Create an embedding function based on CUDA availability.
        
@@ -61,8 +60,8 @@ class VectorStore:
             SentenceTransformerEmbeddingFunction: An instance of the embedding function.
         """
         if self._is_cuda_available():
-            return SentenceTransformerEmbeddingFunction(self.model_name, device="cuda")
-        return SentenceTransformerEmbeddingFunction(self.model_name)
+            return SentenceTransformerEmbeddingFunction(model_name, device="cuda")
+        return SentenceTransformerEmbeddingFunction(model_name)
 
     def create_collection(self, collection_name: str):
         """
@@ -75,7 +74,7 @@ class VectorStore:
         try:
 
             client = self._create_client()
-            return client.get_or_create_collection(name = collection_name,
+            return client.create_collection(name = collection_name,
                                             embedding_function= self._embedding_function(),
                                         configuration= self.config.collection_config)
         except Exception as e:
