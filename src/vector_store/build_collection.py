@@ -30,7 +30,7 @@ class VectorStore:
     def _create_client(self) -> chromadb.api.client.Client:
         """
         Create a persistent ChromaDB client.
-        This method initializes a ChromaDB client that connects to the specified database path. If the database directory does not exist, it will be created.
+        
         Returns:
             chromadb.api.client.Client: An instance of the ChromaDB client.
         """
@@ -45,7 +45,7 @@ class VectorStore:
     def _is_cuda_available(self) -> bool:
         """
         Check if CUDA is available for GPU acceleration.
-        This method checks if CUDA is available on the system, which allows for GPU acceleration when using the embedding model. If CUDA is available, it returns True; otherwise, it returns False.
+        
         Returns:
             bool: True if CUDA is available, False otherwise.
         """
@@ -56,7 +56,7 @@ class VectorStore:
     def _embedding_function(self):
         """
         Create an embedding function based on CUDA availability.
-        This method creates an embedding function instance that uses the specified embedding model. If CUDA is available, it will use the GPU for acceleration.
+       
         Returns:
             SentenceTransformerEmbeddingFunction: An instance of the embedding function.
         """
@@ -75,7 +75,7 @@ class VectorStore:
         try:
 
             client = self._create_client()
-            return client.create_collection(name = collection_name,
+            return client.get_or_create_collection(name = collection_name,
                                             embedding_function= self._embedding_function(),
                                         configuration= self.config.collection_config)
         except Exception as e:
@@ -96,7 +96,7 @@ class VectorStore:
                                             embedding_function= self._embedding_function(),
                                         configuration= self.config.collection_config)
         except Exception as e:
-            log.error(f"Failed to get collection '{collection_name}': {e}")
+            log.error(f"Collection '{collection_name}' not found — run the indexing script first.")
             raise CustomException(f"Failed to get collection '{collection_name}': {e}", sys)
 
 
