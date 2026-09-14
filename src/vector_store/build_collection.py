@@ -9,12 +9,10 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 
 # Define vector store class
 class VectorStore:
-    def __init__(self, database_path: Path|str, model_name: str, cfg: DBConfig):
+    def __init__(self, database_path: str, model_name: str, cfg: DBConfig):
         self.path = database_path
         self.model_name = model_name
         self.config = cfg
-        if isinstance(self.path, str):
-            self.path = Path(self.path)
 
         if not self.path.is_dir():
             os.makedirs(self.path, exist_ok=True)
@@ -31,7 +29,7 @@ class VectorStore:
         return False
 
     def _embedding_function(self):
-        if self._is_cuda_available:
+        if self._is_cuda_available():
             return SentenceTransformerEmbeddingFunction(self.model_name, device="cuda")
         return SentenceTransformerEmbeddingFunction(self.model_name)
 
@@ -49,4 +47,4 @@ class VectorStore:
         
 
 
-    
+
