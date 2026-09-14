@@ -303,7 +303,7 @@ class Chunker:
         )
         return bool(title_only or bare)
 
-    def _hash_chunk(self, doc: dict) -> str:
+    def _hash_chunk(self, doc: dict) -> dict:
         """
         Generate a hash for the given chunk based on its content and metadata.
         This function creates a unique hash for the provided chunk by serializing its content and metadata into a JSON string and then computing the hash of that string. The resulting hash can be used to uniquely identify the chunk.
@@ -311,15 +311,13 @@ class Chunker:
         Args:
             doc: The document dictionary containing 'page_content' and 'metadata'.   
         """
-
-        # Generate a hash for the given chunk based on its content and updated metadata. The hash is computed using the SHA-256 algorithm on the serialized JSON representation of the chunk's content and metadata. The resulting hash is added to the metadata as 'hash_id' and returned along with the updated chunk.
+        # Generate a unique hash for the chunk based on its content and metadata.
         page_content = doc.get("page_content")
         metadata = doc.get("metadata")
         article = metadata.get("article")
         annex = metadata.get("annex")
         chapter = metadata.get("chapter")
-        pc = doc.get("page_content")
-        key = f"{article}_{annex}_{chapter}_{pc}"
+        key = f"{article}_{annex}_{chapter}_{page_content}"
         hash_id = hashlib.sha256(key.encode("utf-8")).hexdigest()
         metadata["chunk_id"] = hash_id
         doc = {"page_content": page_content, "metadata": metadata}
