@@ -344,7 +344,18 @@ class Chunker:
                 self.log.info(f"Successfully chunked {len(self.docs)} documents into {len(all_chunks)} total chunks.")
                 documents = [doc for doc in all_chunks if not self._is_header_only(doc)]
                 self.log.info(f"Removed {len(all_chunks) - len(documents)} header-only documents, leaving {len(documents)} documents for chunking.")
-                hashed_docs = [self._hash_chunk(doc) for doc in documents]
+
+                # Generate a hash for each chunk based on its content and metadata, and add the hash to the metadata as 'hash_id'. The resulting list of hashed documents is returned.
+                hashed_docs = []
+                for doc in documents:
+                    article = doc.get("metadata").get("article")
+                    annex = doc.get("metadata").get("annex")
+                    chapter = doc.get("metadata").get("chapter")
+                    pc = doc.get("page_content")
+                    key = f"{article}_{annex}_{chapter}_{pc}"
+                    hash_id = hashlib.sha256(key.encode("utf-8")).hexdigest()
+                    doc["metadata"]["hash_id"] = hash_id
+                    hashed_docs.append(doc)
                 return hashed_docs
 
     
