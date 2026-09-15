@@ -101,4 +101,16 @@ class VectorStore:
             raise CustomException(f"Failed to get collection '{collection_name}': {e}", sys)
 
 
-
+    def delete_collection(self, collection_name: str):
+        """
+        Delete an existing collection from the vector store.
+        Args:
+            collection_name (str): Name of the collection to delete.
+        """
+        try:
+            client = self.create_or_get_client()
+            client.delete_collection(name = collection_name)
+            self.log.info(f"Successfully deleted collection '{collection_name}'.")
+        except Exception as e:
+            self.log.error(f"Failed to delete collection '{collection_name}': {e}")
+            raise CustomException(f"Failed to delete collection '{collection_name}': {e}", sys)

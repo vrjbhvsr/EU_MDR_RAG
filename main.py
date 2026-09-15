@@ -28,6 +28,3 @@ ef = VectorStore(settings.DB).embedding_function(model_name=settings.embedding.m
 loader = Loader(chunks, settings.DB)
 loader.add_to_collection(embedding_function=ef, collection_name="Testing")
 
-
-collection = VectorStore(settings.DB).get_collection(embedding_function=ef, collection_name="Testing")
-print(collection.peek())

@@ -41,8 +41,9 @@ class Loader:
         try:
             client = self.vec_store.create_or_get_client()
             if collection_name in [c.name for c in client.list_collections()]:
-                client.delete_collection(name = collection_name)
-            collection = self.vec_store.create_collection(embedding_function, collection_name)
+                collection = client.get_collection(name = collection_name)
+            else:
+                collection = self.vec_store.create_collection(embedding_function, collection_name)
             ids, metadatas, page_contents = self._get_chunk_data()
             print(ids[:5])
             if len(ids) != len(set(ids)):
