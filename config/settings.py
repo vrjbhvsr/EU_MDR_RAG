@@ -33,6 +33,8 @@ class ChunkingConfig(BaseModel):
                        "pattern_section" : "^(SECTION [0-9]+) \n(.+)", 
                        "pattern_article" :"^(Article [0-9]+) \n(?!Article)(?!— )(.+)"}
 
+#-------------------------------------------------------------------------------------------------
+
 class DBConfig(BaseModel):
     database_path: Path|str = "data/database/chromadb/"
     collection_config: dict = {
@@ -41,13 +43,17 @@ class DBConfig(BaseModel):
                                         "ef_construction": 300
                                             }
                                 }
+
+    
 ##############################################################################################
+
 
 class Settings(BaseSettings):
     """Application settings for the data ingestion process."""
     ingestion: IngestionConfig = IngestionConfig()
     embedding: EmbeddingConfig = EmbeddingConfig()
     chunking: ChunkingConfig = ChunkingConfig()
+    DB: DBConfig = DBConfig()
 
     class Config:
         """Pydantic configuration for the Settings class."""

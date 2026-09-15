@@ -38,7 +38,7 @@ class VectorStore:
             client = chromadb.PersistentClient(path=self.path)
             return client
         except Exception as e:
-            log.error(f"Failed to create ChromaDB client: {e}")
+            self.log.error(f"Failed to create ChromaDB client: {e}")
             raise CustomException(f"Failed to create ChromaDB client: {e}",sys)
 
     # Check whether cuda is available
@@ -53,7 +53,7 @@ class VectorStore:
             return True
         return False
 
-    def _embedding_function(self, model_name):
+    def embedding_function(self, model_name):
         """
         Create an embedding function based on CUDA availability.
        
@@ -64,39 +64,41 @@ class VectorStore:
             return SentenceTransformerEmbeddingFunction(model_name, device="cuda")
         return SentenceTransformerEmbeddingFunction(model_name)
 
-    def create_collection(self, collection_name: str):
+    def create_collection(self, embedding_function, collection_name: str):
         """
         Create a new collection in the vector store.
         Args:
+            embedding_function: The embedding function to use.
             collection_name (str): Name of the collection to create.
         Returns:
             Collection: An instance of the created collection.
         """
         try:
 
-            client = self._create_client()
+            client = self.create_or_get_client()
             return client.create_collection(name = collection_name,
-                                            embedding_function= self._embedding_function(),
+                                            embedding_function= embedding_function,
                                         configuration= self.config.collection_config)
         except Exception as e:
-            log.error(f"Failed to create collection '{collection_name}': {e}")
+            self.log.error(f"Failed to create collection '{collection_name}': {e}")
             raise CustomException(f"Failed to create collection '{collection_name}': {e}", sys)
         
-    def get_collection(self, collection_name: str):
+    def get_collection(self, embedding_function, collection_name: str):
         """
         Get an existing collection from the vector store.
         Args:
+            embedding_function: The embedding function to use.
             collection_name (str): Name of the collection to retrieve.
         Returns:
             Collection: An instance of the retrieved collection.
         """
         try:
-            client = self._create_client()
+            client = self.create_or_get_client()
             return client.get_collection(name = collection_name,
-                                            embedding_function= self._embedding_function(),
-                                        configuration= self.config.collection_config)
+                                            embedding_function= embedding_function,
+                                        )
         except Exception as e:
-            log.error(f"Collection '{collection_name}' not found — run the indexing script first.")
+            self.log.error(f"Collection '{collection_name}' not found — run the indexing script first.")
             raise CustomException(f"Failed to get collection '{collection_name}': {e}", sys)
 
 

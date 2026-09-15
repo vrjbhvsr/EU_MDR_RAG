@@ -67,7 +67,7 @@ class Structure_Parser:
             Object: A structured representation of the document, such as a tree or nested dictionary, that organizes the content based on the identified markers. This structure allows for efficient navigation and access to specific sections or elements within the document.
         """
         markers = self._get_title_markers()  # Get the list of markers to use for structuring the document.
-        print(f"Total Markers: {len(markers)}")  # Print the total number of markers identified for debugging purposes.
+        #print(f"Total Markers: {len(markers)}")  # Print the total number of markers identified for debugging purposes.
         Documents = []   # Collect all the documents with metadata for next process
         current_text = ""  # Initiate with empty string, Used to hold the content between markers. Resets when hit next marker.
         chapter = ""    # Initiate chapter as empty string, when hits chapter marker holds temporary, resets when hits next chapter marker.
@@ -81,7 +81,7 @@ class Structure_Parser:
         meta_copy['chapter'] = 0 # Set the chapter metadata to 0 for the content before the first marker, indicating that it does not belong to any chapter.
         meta_copy['chapter_title'] = 'preamble'  # Set the chapter title metadata to 'preamble' for the content before the first marker.
         meta_copy['page_number'] = f"{bisect.bisect(self.page_list, 0)}-{bisect.bisect(self.page_list, markers[0][0])}"  # Determine the page number for the content before the first marker using the page starts list.
-        print(meta_copy['page_number'])
+        #print(meta_copy['page_number'])
         Documents.append({"page_content":Page_cont,"metadata": meta_copy})  # Append the content before the first marker
         try:
             self.log.info("Creating a structured representation of the document based on the identified markers.")
