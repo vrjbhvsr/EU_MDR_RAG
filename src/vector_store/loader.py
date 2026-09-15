@@ -10,7 +10,7 @@ class Loader:
         self.config = cfg
         self.vec_store = VectorStore(self.config)
         self.log = log()
-99
+
     def _get_chunk_data(self):
         ids, metadatas, page_contents = [], [], []
         for chunk in self.chunks:
