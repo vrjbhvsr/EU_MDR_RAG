@@ -1,5 +1,4 @@
 import sys
-import chromadb
 from typing import List
 from config.settings import DBConfig
 from src.vector_store import VectorStore
@@ -46,10 +45,11 @@ class Loader:
             collection = self.vec_store.create_collection(embedding_function, collection_name)
             ids, metadatas, page_contents = self._get_chunk_data()
             print(ids[:5])
-            if len(ids) == len(set(ids)):
-                collection.add(ids=ids,
-                                documents = page_contents,
-                                metadatas = metadatas)
+            if len(ids) != len(set(ids)):
+                raise CustomException("Duplicate chunk_ids — aborting insert", sys)
+            collection.add(ids=ids,
+                            documents = page_contents,
+                            metadatas = metadatas)
             self.log.info(f"Successfully added {len(ids)} chunks to collection '{collection_name}'.")
         except Exception as e:
             self.log.error(f"Failed to add chunks to collection: {e}")
