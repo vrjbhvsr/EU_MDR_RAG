@@ -45,7 +45,7 @@ class Loader:
             else:
                 collection = self.vec_store.create_collection(embedding_function, collection_name)
             ids, metadatas, page_contents = self._get_chunk_data()
-            print(ids[:5])
+            
             if len(ids) != len(set(ids)):
                 raise CustomException("Duplicate chunk_ids — aborting insert", sys)
             collection.add(ids=ids,
