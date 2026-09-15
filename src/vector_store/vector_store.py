@@ -21,6 +21,7 @@ class VectorStore:
 
         self.config = cfg
         self.path = self.config.database_path
+        self.log = log()
 
         if not os.path.isdir(self.path):
             os.makedirs(self.path, exist_ok=True)
