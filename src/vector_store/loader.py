@@ -48,7 +48,7 @@ class Loader:
             
             if len(ids) != len(set(ids)):
                 raise CustomException("Duplicate chunk_ids — aborting insert", sys)
-            collection.add(ids=ids,
+            collection.upsert(ids=ids,
                             documents = page_contents,
                             metadatas = metadatas)
             self.log.info(f"Successfully added {len(ids)} chunks to collection '{collection_name}'.")
