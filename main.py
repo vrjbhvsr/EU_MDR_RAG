@@ -1,30 +1,18 @@
-### Future reminder: I want to sepearte the indexing and generation pipeline. so plann accordingly.
-###  Main.py must contain only generation pipeline
-
-from scripts.ingest_documents import Document_Ingestor
-from src.chunking import Chunker
-from config import get_settings
-from transformers import AutoTokenizer 
-from src.vector_store import VectorStore, Loader
+from config.settings import DBConfig, EmbeddingConfig, RetrieverConfig, get_settings
+from src.vector_store import VectorStore
+from scripts.Indexing import poppulate_vecstore
+from src.retrieval import Retriever
 
 
 settings = get_settings()
-tokenizer = AutoTokenizer.from_pretrained(settings.embedding.model_name)
-raw_dir = settings.ingestion.raw_data_dir
-processed_dir = settings.ingestion.processed_data_dir
-embedding_model = settings.embedding.model_name
 
+vs = VectorStore(settings.DB)
+ef = vs.embedding_function(settings.embedding.model_name)
+collection = vs.get_collection(embedding_function=ef, collection_name=settings.DB.collection_name)
 
-ingestor = Document_Ingestor(raw_dir, processed_dir)
-cleaned_text = ingestor.ingest()
-#print("raw: \n", cleaned_text[0:2])
+if not collection.count() == 366:
+    poppulate_vecstore()
 
-
-chunker = Chunker(tokenizer, cleaned_text, settings.chunking)
-chunks = chunker.chunk_docs()
-
-
-ef = VectorStore(settings.DB).embedding_function(model_name=settings.embedding.model_name)
-loader = Loader(chunks, settings.DB)
-loader.add_to_collection(embedding_function=ef, collection_name="Testing")
-
+retriever = Retriever(vector_store=collection, cfg= settings.retriver)
+r = retriever.retrieve("What are the requirements mentioned in Article 62 for conformity of devices?")
+print(r)

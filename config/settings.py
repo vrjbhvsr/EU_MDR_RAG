@@ -43,6 +43,12 @@ class DBConfig(BaseModel):
                                         "ef_construction": 300
                                             }
                                 }
+    collection_name: str = "eu_mdr"
+
+#--------------------------------------------------------------------------------------------------
+
+class RetrieverConfig:
+    top_k: int = 5
 
     
 ##############################################################################################
@@ -54,6 +60,7 @@ class Settings(BaseSettings):
     embedding: EmbeddingConfig = EmbeddingConfig()
     chunking: ChunkingConfig = ChunkingConfig()
     DB: DBConfig = DBConfig()
+    retriver: RetrieverConfig = RetrieverConfig()
 
     class Config:
         """Pydantic configuration for the Settings class."""
