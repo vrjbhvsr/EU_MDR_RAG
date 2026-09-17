@@ -2,6 +2,7 @@ import json
 import sys
 import re
 import hashlib
+import os
 from typing import List
 from pathlib import Path
 from config.settings import ChunkingConfig
@@ -348,6 +349,10 @@ class Chunker:
                 documents = [doc for doc in all_chunks if not self._is_header_only(doc)]
                 self.log.info(f"Removed {len(all_chunks) - len(documents)} header-only documents, leaving {len(documents)} documents for chunking.")
                 hashed_docs = [self._hash_chunk(doc) for doc in documents]
+
+                if not os.path.exists("data/processed/chunks/"): os.makedirs("data/processed/chunks/")
+                with open("data/processed/chunks/chunks_from_script.json", "w") as f:
+                    json.dump(hashed_docs, f, indent=4)
                 return hashed_docs
 
     

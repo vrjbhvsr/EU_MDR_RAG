@@ -9,10 +9,10 @@ settings = get_settings()
 vs = VectorStore(settings.DB)
 ef = vs.embedding_function(settings.embedding.model_name)
 collection = vs.get_collection(embedding_function=ef, collection_name=settings.DB.collection_name)
+print(collection.count())
+#if not collection.count() == 366:
+#poppulate_vecstore()
 
-if not collection.count() == 366:
-    poppulate_vecstore()
-
-retriever = Retriever(vector_store=collection, cfg= settings.retriver)
+retriever = Retriever(collection=collection, cfg= settings.retriver)
 r = retriever.retrieve("What are the requirements mentioned in Article 62 for conformity of devices?")
 print(r)
