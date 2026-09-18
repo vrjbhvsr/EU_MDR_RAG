@@ -54,6 +54,16 @@ def reciprocal_rank(retrieved_ids, gold_ids):
 
 
 def evaluate_retriever(evaluation_set: str, retriever, top_k: int):
+    """
+    Evaluate the retriever on a given evaluation set.
+    Args:
+        evaluation_set (str): path to the evaluation set json file
+        retriever (Retriever): the retriever to evaluate
+        top_k (int): the number of top-k results to consider for evaluation
+    Returns:    
+        recall (float): the recall@k
+        MRR (float): the mean reciprocal rank
+    """
     with open(Path(evaluation_set), 'r') as f:
         eval_data = json.load(f)
 

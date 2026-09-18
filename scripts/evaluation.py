@@ -3,6 +3,7 @@ from src.vector_store import VectorStore
 from scripts.Indexing import poppulate_vecstore
 from src.retrieval import Retriever
 from src.evaluation import evaluate_retriever
+from src.utils import log, CustomException
 
 
 settings = get_settings()
@@ -16,5 +17,4 @@ retriever = Retriever(collection=collection, cfg= settings.retriver)
 recall_at_5, MRR = evaluate_retriever(evaluation_set="data/evaluation/test_questions_updated.json",
                                       retriever=retriever,
                                       top_k= settings.retriver.top_k)
-
-print(recall_at_5, MRR)
+log.info(f"Recall@5: {recall_at_5}, MRR: {MRR}")
