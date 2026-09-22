@@ -1,20 +1,20 @@
 import sys
 from typing import List
-from config.settings import DBConfig
+from config.settings import DBConfig, get_settings
 from src.vector_store import VectorStore
 from src.utils import log, CustomException
 
 class Loader:
-    def __init__(self, chunks: List[dict], cfg: DBConfig):
+    def __init__(self, chunks: List[dict]):
         """
         Initialize the Loader class.
         Args:
             chunks (List[dict]): List of chunk dictionaries containing page content and metadata.
-            cfg (DBConfig): Configuration for the database.
         """
+        settings = get_settings()
         self.chunks = chunks
-        self.config = cfg
-        self.vec_store = VectorStore(self.config)
+        self.config = settings.DB
+        self.vec_store = VectorStore()
         self.log = log()
 
     def _get_chunk_data(self) -> tuple[List[str], List[dict], List[str]]:

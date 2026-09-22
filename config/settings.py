@@ -50,6 +50,7 @@ class DBConfig(BaseModel):
 class RetrieverConfig:
     top_k: int = 5
     filter: dict | None = None
+    constant_k: int = 60
 
     
 ##############################################################################################

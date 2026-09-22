@@ -1,9 +1,10 @@
-from config.settings import RetrieverConfig
+from config.settings import get_settings
 from typing import List
 
 class Retriever:
-    def __init__(self, collection, cfg: RetrieverConfig):
-        self.config = cfg
+    def __init__(self, collection):
+        settings = get_settings()
+        self.config = settings.retriver
         self.collection = collection
 
     def retrieve(self,

@@ -3,11 +3,13 @@
 from typing import List
 import re
 from rank_bm25 import BM25Okapi
+import numpy as np
+from config.settings import get_settings
 
 class BM25:
     def __init__(self, chunks: List[dict]):
         self.chunks =  chunks
-        self.config = cfg
+        #self.config = cfg
 
     def _tokenizer(self, text) -> List:
         return re.findall(r'\w+', text.lower())
@@ -62,15 +64,31 @@ class BM25:
 
 class BM25_retriever:
     def __init__(self, chunks: List[dict]):
+        self.chunks = chunks
         self.bm25 = BM25(chunks)
-        corpus, self.ids, self.metadatas, self.page_contents = self.bm25.tokenize()
-        self.bm = BM25Okapi(corpus=corpus)
+        self.corpus, self.ids, self.metadatas, self.page_contents = self.bm25.tokenize()
+        self.bm = BM25Okapi(corpus=self.corpus)
+        settings = get_settings()
+        self.config = settings.retriver
 
-    def retrieve(self, query: str):
+    def _get_scores(self, query: str) -> List:
         tokenized_query = self.bm25._tokenizer(query)
         scores = self.bm.get_scores(tokenized_query)
-        return scores
-        
+        return list(scores)
 
 
-        
+    def retrieve(self, query) ->List[tuple]:
+        scores = self._get_scores(query=query)
+        top_k_indexes = np.argsort(scores)[::-1][:self.config.top_k]
+        top_scores = [scores[x] for x in top_k_indexes]
+        top_k_docs = [self.chunks[k] for k in top_k_indexes]
+        metadatas = [m.get('metadata') for m in top_k_docs]
+        chunk_ids = [id.get('chunk_id') for id in metadatas]
+        page_contents = [pc.get('page_content') for pc in top_k_docs]
+
+        return [
+                {"chunk_id": id_, "page_content": doc, "metadata": meta, "score": float(scr)}
+                for id_, doc, meta, scr in zip(
+                    chunk_ids, page_contents, metadatas, top_scores
+                )
+            ]

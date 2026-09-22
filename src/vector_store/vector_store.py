@@ -4,22 +4,21 @@ import torch
 import sys
 from pathlib import Path
 from src.utils import log, CustomException
-from config.settings import DBConfig
+from config.settings import get_settings
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 
 # Define vector store class
 class VectorStore:
-    def __init__(self,cfg: DBConfig):
+    def __init__(self):
         """
         Initialize the VectorStore class.
         Args:
             database_path (str): Path to the database directory.
             model_name (str): Name of the embedding model to use.
-            cfg (DBConfig): Configuration for the database.
         """
-
-        self.config = cfg
+        settings = get_settings()
+        self.config = settings.DB
         self.path = self.config.database_path
         self.log = log()
 
