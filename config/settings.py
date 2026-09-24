@@ -52,6 +52,15 @@ class RetrieverConfig:
     filter: dict | None = None
     constant_k: int = 60
 
+#---------------------------------------------------------------------------------------------------
+
+class LLMConfig:
+    model_name: str = "meta-llama/Llama-3.2-3B-Instruct"
+
+#----------------------------------------------------------------------------------------------------
+
+class GenerationConfig:
+    prompt_file: str = "Prompts/prompt_4.md"
     
 ##############################################################################################
 
@@ -63,6 +72,8 @@ class Settings(BaseSettings):
     chunking: ChunkingConfig = ChunkingConfig()
     DB: DBConfig = DBConfig()
     retriver: RetrieverConfig = RetrieverConfig()
+    llm: LLMConfig = LLMConfig()
+    generation: GenerationConfig = GenerationConfig()
 
     class Config:
         """Pydantic configuration for the Settings class."""
