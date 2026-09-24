@@ -1,7 +1,6 @@
 from src.utils import log, CustomException
 from config.settings import get_settings
-import bisect
-import re
+
 
 
 class prompt_Configuration:
