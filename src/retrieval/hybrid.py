@@ -16,15 +16,15 @@ class Hybrid_Retriever:
         rrf_scores = {}
         by_id = {}
         #print([y.get('chunk_id') for x in combined_results for y in x])
-        for list in combined_results:
-            for rank, doc in enumerate(list, start=1): 
+        for list_ in combined_results:
+            for rank, doc in enumerate(list_, start=1): 
                 doc_id = doc.get('chunk_id')
                 if doc_id not in rrf_scores:
                     rrf_scores[doc_id] = 0.0
                 rrf_scores[doc_id] += 1.0/(self.config.constant_k+rank)
                 
         sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
-        return sorted_docs[:self.config.top_k-1]
+        return sorted_docs[:self.config.top_k]
 
 
     def retrieve(self) -> list[dict]:

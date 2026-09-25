@@ -76,7 +76,7 @@ def evaluate_retriever(evaluation_set: str, retriever, top_k: int):
             g_ids = data['ids'][0]
             #print(g_ids)
 
-            result = retriever.retrieve(question)
+            result = retriever.retrieve()
 
             r_ids = [c.get("chunk_id") for c in result]
 
