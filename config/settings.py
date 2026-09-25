@@ -55,13 +55,20 @@ class RetrieverConfig:
 #---------------------------------------------------------------------------------------------------
 
 class LLMConfig:
-    model_name: str = "meta-llama/Llama-3.2-3B-Instruct"
+    model_name: str = "llama3.2:3b"
+    stream: bool = True
 
 #----------------------------------------------------------------------------------------------------
 
 class GenerationConfig:
     prompt_file: str = "Prompts/prompt_4.md"
-    
+    api: str = "http://localhost:11434/api/generate"
+    stream: bool = True
+
+#----------------------------------------------------------------------------------------------------
+class MainConfig:
+    query: str = input()
+
 ##############################################################################################
 
 
@@ -74,6 +81,7 @@ class Settings(BaseSettings):
     retriver: RetrieverConfig = RetrieverConfig()
     llm: LLMConfig = LLMConfig()
     generation: GenerationConfig = GenerationConfig()
+    main: MainConfig = MainConfig()
 
     class Config:
         """Pydantic configuration for the Settings class."""

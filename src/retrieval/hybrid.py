@@ -4,13 +4,10 @@ from src.retrieval import Retriever
 from src.retrieval import BM25_retriever
 
 class Hybrid_Retriever:
-    def __init__(self, chunks: list[dict]):
+    def __init__(self, collection, chunks: list[dict]):
         self.settings = get_settings()
         self.config = self.settings.retriver
         self.chunks = chunks
-        vs = VectorStore()
-        ef = vs.embedding_function(self.settings.embedding.model_name)
-        collection = vs.get_collection(embedding_function=ef, collection_name=self.settings.DB.collection_name)
         self.retriever = Retriever(collection=collection)
         self.bm = BM25_retriever(chunks)
 
@@ -30,9 +27,9 @@ class Hybrid_Retriever:
         return sorted_docs[:self.config.top_k-1]
 
 
-    def retrieve(self,query: str):
-        dense_results = self.retriever.retrieve(query)
-        bm_results = self.bm.retrieve(query)
+    def retrieve(self) -> list[dict]:
+        dense_results = self.retriever.retrieve()
+        bm_results = self.bm.retrieve()
         by_id = {r["chunk_id"]: r for r in dense_results + bm_results}
         scored_results = self._RRF(combined_results=[dense_results,bm_results])
         return [

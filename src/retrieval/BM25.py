@@ -68,17 +68,17 @@ class BM25_retriever:
         self.bm25 = BM25(chunks)
         self.corpus, self.ids, self.metadatas, self.page_contents = self.bm25.tokenize()
         self.bm = BM25Okapi(corpus=self.corpus)
-        settings = get_settings()
-        self.config = settings.retriver
+        self.settings = get_settings()
+        self.config = self.settings.retriver
 
-    def _get_scores(self, query: str) -> List:
-        tokenized_query = self.bm25._tokenizer(query)
+    def _get_scores(self) -> List:
+        tokenized_query = self.bm25._tokenizer(self.settings.main.query)
         scores = self.bm.get_scores(tokenized_query)
         return list(scores)
 
 
-    def retrieve(self, query) ->List[tuple]:
-        scores = self._get_scores(query=query)
+    def retrieve(self) ->List[tuple]:
+        scores = self._get_scores()
         top_k_indexes = np.argsort(scores)[::-1][:self.config.top_k]
         top_scores = [scores[x] for x in top_k_indexes]
         top_k_docs = [self.chunks[k] for k in top_k_indexes]

@@ -3,16 +3,14 @@ from typing import List
 
 class Retriever:
     def __init__(self, collection):
-        settings = get_settings()
-        self.config = settings.retriver
+        self.settings = get_settings()
+        self.config = self.settings.retriver
         self.collection = collection
 
-    def retrieve(self,
-                  question: str
-                  ) -> List:
+    def retrieve(self) -> List:
 
         results = self.collection.query(
-            query_texts = [question],
+            query_texts = [self.settings.main.query],
             n_results = self.config.top_k,
             where = self.config.filter
         )
