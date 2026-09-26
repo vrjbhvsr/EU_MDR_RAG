@@ -17,8 +17,8 @@ class Build_Pipeline:
         self.prompt_config = Prompt_Configuration()
         self.generation = Generate_Answer()
 
-    def build(self):
-        prompt = self.prompt_config.create_prompt(retriever=self.hr)
+    def build(self, query:str):
+        prompt = self.prompt_config.create_prompt(retriever=self.hr, query = query)
         answer = self.generation.response(prompt=prompt)
         return answer
 

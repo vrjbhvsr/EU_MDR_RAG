@@ -27,9 +27,9 @@ class Hybrid_Retriever:
         return sorted_docs[:self.config.top_k]
 
 
-    def retrieve(self) -> list[dict]:
-        dense_results = self.retriever.retrieve()
-        bm_results = self.bm.retrieve()
+    def retrieve(self, query: str) -> list[dict]:
+        dense_results = self.retriever.retrieve(query)
+        bm_results = self.bm.retrieve(query)
         by_id = {r["chunk_id"]: r for r in dense_results + bm_results}
         scored_results = self._RRF(combined_results=[dense_results,bm_results])
         return [

@@ -71,14 +71,14 @@ class BM25_retriever:
         self.settings = get_settings()
         self.config = self.settings.retriver
 
-    def _get_scores(self) -> List:
-        tokenized_query = self.bm25._tokenizer(self.settings.main.query)
+    def _get_scores(self,query: str) -> List:
+        tokenized_query = self.bm25._tokenizer(query)
         scores = self.bm.get_scores(tokenized_query)
         return list(scores)
 
 
-    def retrieve(self) ->List[tuple]:
-        scores = self._get_scores()
+    def retrieve(self,query: str) ->List[tuple]:
+        scores = self._get_scores(query)
         top_k_indexes = np.argsort(scores)[::-1][:self.config.top_k]
         top_scores = [scores[x] for x in top_k_indexes]
         top_k_docs = [self.chunks[k] for k in top_k_indexes]

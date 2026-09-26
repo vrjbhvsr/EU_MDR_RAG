@@ -61,13 +61,14 @@ class LLMConfig:
 #----------------------------------------------------------------------------------------------------
 
 class GenerationConfig:
-    prompt_file: str = "Prompts/prompt_4.md"
+    prompt_file: str = "Prompts/prompt_5.md"
     api: str = "http://localhost:11434/api/generate"
     stream: bool = True
 
 #----------------------------------------------------------------------------------------------------
 class MainConfig:
-    query: str = input()
+    #query: str = input()
+    pass
 
 ##############################################################################################
 

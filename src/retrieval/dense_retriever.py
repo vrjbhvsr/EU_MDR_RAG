@@ -7,10 +7,10 @@ class Retriever:
         self.config = self.settings.retriver
         self.collection = collection
 
-    def retrieve(self) -> List:
+    def retrieve(self, query: str) -> List:
 
         results = self.collection.query(
-            query_texts = [self.settings.main.query],
+            query_texts = [query],
             n_results = self.config.top_k,
             where = self.config.filter
         )

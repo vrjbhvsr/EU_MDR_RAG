@@ -48,26 +48,27 @@ class Prompt_Configuration:
     def _create_model_context(self,retrieved_chunks: list[dict]):
         list_of_chunks = []
         for chunk in retrieved_chunks:
+            #print(chunk, end="\n\n")
             page_content= chunk['page_content']
             metadata = chunk['metadata']
-            for content, meta in zip(page_content, metadata):
-                source = self._chunk_source(metadata=metadata)
-                page_c = "<CHUNK_SOURCE: " + source + "</CHUNK_SOURCE>\n" + content + "</CHUNK>"
-                list_of_chunks.append(page_c)
+            
+            source = self._chunk_source(metadata=metadata)
+            page_c = "<CHUNK_SOURCE: " + source + "</CHUNK_SOURCE>\n" + page_content + "</CHUNK>"
+            list_of_chunks.append(page_c)
 
         context = (f"\n"+"-"*120 + "\n").join(list_of_chunks)
         return context
 
-    def create_prompt(self, retriever):
-        results = retriever.retrieve()
-        
+    def create_prompt(self, retriever, query: str):
+        results = retriever.retrieve(query)
         model_context= self._create_model_context(retrieved_chunks=results)
+        #print(model_context)
         with open(self.config.prompt_file, 'r') as f:
             prompt = f.readlines()
 
         prompt.insert(prompt.index("# Final instruction\n"), f"<SOURCES:>\n{model_context} \n</SOURCES>\n")
-        prompt.insert(prompt.index("# Final instruction\n"), f"<QUESTION:>\n{self.settings.main.query} \n</QUESTION>\n")
-        #log.info(f"The token length of the model input: {len(tokenizer.encode(''.join(prompt)))}")
+        prompt.insert(prompt.index("# Final instruction\n"), f"<QUESTION:>\n{query} \n</QUESTION>\n")
+        #self.log.info(f"The token length of the model input: {''.join(prompt)}")
 
         return "".join(prompt)
 
